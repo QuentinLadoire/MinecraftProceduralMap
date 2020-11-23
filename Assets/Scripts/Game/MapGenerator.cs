@@ -12,6 +12,7 @@ public class MapGenerator : MonoBehaviour
 	[SerializeField] Vector2 scale = new Vector2(20, 40);
 
 	[Header("Game")]
+	[SerializeField] int nbChunk = 10;
 	[SerializeField] GameObject chunkPrefab = null;
 
 	HeightMap heightMap = null;
@@ -21,21 +22,24 @@ public class MapGenerator : MonoBehaviour
 		var chunk = Instantiate(chunkPrefab).GetComponent<Chunk>();
 		chunk.transform.position = new Vector3(chunkPosition.x, 0.0f, chunkPosition.y);
 
+		CubeType[,,] cubeTypes = new CubeType[Chunk.ChunkSize, Chunk.ChunkSize, Chunk.ChunkHeight];
 		for (int k = 0; k < Chunk.ChunkHeight; k++)
 		{
 			for (int j = 0; j < Chunk.ChunkSize; j++)
 			{
 				for (int i = 0; i < Chunk.ChunkSize; i++)
 				{
+					cubeTypes[i, j, k] = CubeType.Air;
+
 					if (!(k > heightMap.GetHeight(chunkPosition + new Vector2(i - Chunk.ChunkSize / 2, j - Chunk.ChunkSize / 2)) * Chunk.ChunkHeight))
 					{
-						var cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-						cube.transform.parent = chunk.transform;
-						cube.transform.localPosition = new Vector3(i - Chunk.ChunkSize / 2, k, j - Chunk.ChunkSize / 2);
+						cubeTypes[i, j, k] = CubeType.Solid;
 					}
 				}
 			}
 		}
+
+		chunk.CubeTypes = cubeTypes;
 	}
 
 	private void Awake()
@@ -44,8 +48,6 @@ public class MapGenerator : MonoBehaviour
 	}
 	private void Start()
 	{
-		int nbChunk = 10;
-		
 		for (int j = 0; j < nbChunk; j++)
 		{
 			for (int i = 0; i < nbChunk; i++)

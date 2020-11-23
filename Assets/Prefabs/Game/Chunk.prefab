@@ -43,3 +43,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab516e4acad55da42a7d54453803388a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cubeMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  cubeMaterial: {fileID: 2100000, guid: 0d5576c55c0374c43ab94a18f97e00a8, type: 2}
+  noFrictionMat: {fileID: 13400000, guid: c93674fd94bb4d34a81b96e218920a0e, type: 2}

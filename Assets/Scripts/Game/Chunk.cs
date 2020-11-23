@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class TextureGenerator
 {
@@ -69,10 +70,77 @@ public class MeshGenerator
 	}
 }
 
+public enum CubeType
+{
+	None = -1,
+	Solid,
+	Air
+}
+
 public class Chunk : MonoBehaviour
 {
 	public const int ChunkSize = 15;
 	public const int ChunkHeight = 15;
 
+	[SerializeField] Mesh cubeMesh = null;
+	[SerializeField] Material cubeMaterial = null;
 
+	CubeType[,,] cubeTypes = null;
+	public CubeType[,,] CubeTypes { get => cubeTypes; set => SetCubeTypes(value); }
+
+	List<Matrix4x4> matrices = new List<Matrix4x4>();
+	List<BoxCollider> cubeColliders = new List<BoxCollider>();
+
+	bool activeColliders = false;
+
+	public void SetCubeTypes(CubeType[,,] cubeTypes)
+	{
+		this.cubeTypes = cubeTypes;
+
+		for (int k = 0; k < ChunkHeight; k++)
+		{
+			for (int j = 0; j < ChunkSize; j++)
+			{
+				for (int i = 0; i < ChunkSize; i++)
+				{
+					if (cubeTypes[i, j, k] == CubeType.Solid)
+					{
+						matrices.Add(Matrix4x4.TRS(transform.position + new Vector3(i - ChunkSize / 2, k, j - ChunkSize / 2), Quaternion.identity, Vector3.one));
+
+						var collider = gameObject.AddComponent<BoxCollider>();
+						collider.center = new Vector3(i - ChunkSize / 2, k, j - ChunkSize / 2);
+						collider.enabled = activeColliders;
+
+						cubeColliders.Add(collider);
+					}
+				}
+			}
+		}
+	}
+
+	bool IsPlayerInChunk()
+	{
+		return (PlayerController.Position.x > transform.position.x - ChunkSize / 2 &&
+				PlayerController.Position.x < transform.position.x + ChunkSize / 2 &&
+				PlayerController.Position.z > transform.position.z - ChunkSize / 2 &&
+				PlayerController.Position.z < transform.position.z + ChunkSize / 2);
+	}
+
+	private void Update()
+	{
+		if (cubeTypes == null) return;
+		if (matrices == null) return;
+
+		if (IsPlayerInChunk() != activeColliders)
+		{
+			activeColliders = !activeColliders;
+			cubeColliders.ForEach(item => item.enabled = activeColliders);
+		}
+
+		for (int i = 0; i < matrices.Count / 1023; i++)
+		{
+			Graphics.DrawMeshInstanced(cubeMesh, 0, cubeMaterial, matrices.Skip(i * 1023).ToArray(), 1023);
+		}
+		Graphics.DrawMeshInstanced(cubeMesh, 0, cubeMaterial, matrices.Skip((matrices.Count / 1023) * 1023).ToArray());
+	}
 }
