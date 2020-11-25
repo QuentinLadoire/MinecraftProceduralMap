@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class MapGenerator : MonoBehaviour
 {
@@ -17,29 +18,67 @@ public class MapGenerator : MonoBehaviour
 
 	HeightMap heightMap = null;
 
-	void CreateChunk(Vector2 chunkPosition)
-	{
-		var chunk = Instantiate(chunkPrefab).GetComponent<Chunk>();
-		chunk.transform.position = new Vector3(chunkPosition.x, 0.0f, chunkPosition.y);
+	Dictionary<Vector2Int, ChunkData> loadedChunkDatas = new Dictionary<Vector2Int, ChunkData>();
 
-		CubeType[,,] cubeTypes = new CubeType[Chunk.ChunkSize, Chunk.ChunkSize, Chunk.ChunkHeight];
+	ChunkData CreateChunkData(Vector2 chunkPosition)
+	{
+		ChunkData chunkData = new ChunkData();
+		chunkData.position = new Vector3(chunkPosition.x, 0.0f, chunkPosition.y);
+
 		for (int k = 0; k < Chunk.ChunkHeight; k++)
 		{
 			for (int j = 0; j < Chunk.ChunkSize; j++)
 			{
 				for (int i = 0; i < Chunk.ChunkSize; i++)
 				{
-					cubeTypes[i, j, k] = CubeType.Air;
+					chunkData.cubeTypes[i, j, k] = CubeType.Air;
 
 					if (!(k > heightMap.GetHeight(chunkPosition + new Vector2(i - Chunk.ChunkSize / 2, j - Chunk.ChunkSize / 2)) * Chunk.ChunkHeight))
 					{
-						cubeTypes[i, j, k] = CubeType.Solid;
+						chunkData.cubeTypes[i, j, k] = CubeType.Solid;
 					}
 				}
 			}
 		}
+		chunkData.CalculateMatrices();
 
-		chunk.CubeTypes = cubeTypes;
+		return chunkData;
+	}
+	void CreateChunk(ChunkData chunkData)
+	{
+		var chunk = Instantiate(chunkPrefab).GetComponent<Chunk>();
+		chunk.transform.position = chunkData.position;
+		chunk.ChunkData = chunkData;
+		chunkData.parent = chunk;
+	}
+
+	void CheckChunk(Vector2Int playerPosition)
+	{
+		var keys = MathfPlus.GetAllPointInRadius(nbChunk);
+		foreach (var key in keys)
+		{
+			var tmp = playerPosition + key;
+			if (!loadedChunkDatas.ContainsKey(tmp))
+			{
+				var chunkData = CreateChunkData(tmp * Chunk.ChunkSize);
+				CreateChunk(chunkData);
+				loadedChunkDatas.Add(tmp, chunkData);
+			}
+		}
+
+		List<Vector2Int> keysToRemove = new List<Vector2Int>();
+		foreach (var loadedChunk in loadedChunkDatas)
+		{
+			if ((loadedChunk.Key - playerPosition).magnitude > nbChunk)
+			{
+				keysToRemove.Add(loadedChunk.Key);
+			}
+		}
+
+		keysToRemove.ForEach(item => {
+			Destroy(loadedChunkDatas[item].parent);
+			loadedChunkDatas.Remove(item);
+		});
 	}
 
 	private void Awake()
@@ -48,12 +87,15 @@ public class MapGenerator : MonoBehaviour
 	}
 	private void Start()
 	{
-		for (int j = 0; j < nbChunk; j++)
+		var playerPosition = (PlayerController.Position / Chunk.ChunkSize).ToVector3Int();
+		CheckChunk(new Vector2Int(playerPosition.x, playerPosition.z));
+	}
+	private void Update()
+	{
+		if ((PlayerController.Position / Chunk.ChunkSize).Round() != (PlayerController.PreviousPosition / Chunk.ChunkSize).Round())
 		{
-			for (int i = 0; i < nbChunk; i++)
-			{
-				CreateChunk(new Vector2(i * Chunk.ChunkSize, j * Chunk.ChunkSize));
-			}
+			var playerPosition = (PlayerController.Position / Chunk.ChunkSize).RoundToInt();
+			CheckChunk(new Vector2Int(playerPosition.x, playerPosition.z));
 		}
 	}
 }

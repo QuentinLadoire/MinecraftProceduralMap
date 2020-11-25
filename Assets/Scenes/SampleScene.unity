@@ -266,7 +266,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 90
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -310,7 +310,6 @@ GameObject:
   - component: {fileID: 1847918787}
   - component: {fileID: 1847918786}
   - component: {fileID: 1847918785}
-  - component: {fileID: 1847918790}
   - component: {fileID: 1847918789}
   m_Layer: 0
   m_Name: Player
@@ -409,26 +408,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 506a5ff5bdde52d4eaa9e76f65f76d35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 5
+  speed: 10
   angularSpeed: 5
-  jumpForce: 25
   camera: {fileID: 963194227}
---- !u!54 &1847918790
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1847918784}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 112
-  m_CollisionDetection: 0
 --- !u!1001 &573669782195139334
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -482,7 +464,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
       propertyPath: nbChunk
-      value: 1
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
       propertyPath: scale.x

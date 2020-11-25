@@ -6,34 +6,41 @@ public class PlayerController : MonoBehaviour
 {
 	static PlayerController instance = null;
 	public static Vector3 Position { get => instance.transform.position; }
+	public static Vector3 PreviousPosition { get => instance.previousPosition; }
 
 	[Header("Parameters")]
 	[SerializeField] float speed = 5.0f;
 	[SerializeField] float angularSpeed = 5.0f;
-	[SerializeField] float jumpForce = 25.0f;
 
 	[Header("References")]
 	[SerializeField] new Camera camera = null;
 
-	new Rigidbody rigidbody = null;
+	//Camera rotation
+	Quaternion lerpMax = Quaternion.identity;
+	Quaternion lerpMin = Quaternion.identity;
+	float lerpValue = 0.0f;
 
-	float t = 0.0f;
+	Vector3 previousPosition = Vector3.zero;
 
 	private void Awake()
 	{
 		instance = this;
 
-		rigidbody = GetComponent<Rigidbody>();
+		lerpMax = Quaternion.LookRotation(Vector3.up, Vector3.back);
+		lerpMin = Quaternion.LookRotation(Vector3.down, Vector3.forward);
 	}
-
 	private void Start()
 	{
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
-	}
 
+		previousPosition = transform.position;
+	}
 	private void Update()
 	{
+		previousPosition = transform.position;
+
+		//Player movement
 		Vector3 direction = Vector3.zero;
 
 		if (Input.GetKey(KeyCode.Z))
@@ -44,17 +51,20 @@ public class PlayerController : MonoBehaviour
 			direction += -transform.right;
 		if (Input.GetKey(KeyCode.D))
 			direction += transform.right;
-		if (Input.GetKeyDown(KeyCode.Space))
-			rigidbody.AddForce(Vector3.up * jumpForce * 10.0f);
+		if (Input.GetKey(KeyCode.Space))
+			direction += transform.up;
+		if (Input.GetKey(KeyCode.LeftShift))
+			direction += -transform.up;
 
 		transform.position += direction.normalized * speed * Time.deltaTime;
 
 		float axisX = Input.GetAxisRaw("Mouse X");
 		transform.Rotate(Vector3.up, axisX * angularSpeed * 100.0f * Time.deltaTime);
 
+		//Camera rotation
 		float axisY = -Input.GetAxisRaw("Mouse Y");
-		t += axisY * angularSpeed * Time.deltaTime;
-		t = Mathf.Clamp(t, 0.0f, 1.0f);
-		camera.transform.rotation = transform.rotation * Quaternion.Lerp(Quaternion.LookRotation(Vector3.up, Vector3.back), Quaternion.LookRotation(Vector3.down, Vector3.forward), t);
+		lerpValue += axisY * angularSpeed * Time.deltaTime;
+		lerpValue = Mathf.Clamp(lerpValue, 0.0f, 1.0f);
+		camera.transform.rotation = transform.rotation * Quaternion.Lerp(lerpMax, lerpMin, lerpValue);
 	}
 }
