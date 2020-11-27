@@ -1,6 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+
+using Random = System.Random;
 
 public class HeightMap
 {
@@ -14,7 +17,7 @@ public class HeightMap
 
 	public float GetHeight(float x, float y)
 	{
-		Random.InitState(Seed);
+		Random random = new Random(Seed);
 
 		float frequency = 1.0f;
 		float amplitude = 1.0f;
@@ -23,8 +26,8 @@ public class HeightMap
 
 		for (int i = 0; i < Octaves; i++)
 		{
-			var X = (x + Random.Range(-100000.0f, 100000.0f)) / Scale.x * frequency;
-			var Y = (y + Random.Range(-100000.0f, 100000.0f)) / Scale.y * frequency;
+			var X = (x + random.Next(-100000, 100000)) / Scale.x * frequency;
+			var Y = (y + random.Next(-100000, 100000)) / Scale.y * frequency;
 
 			var perlinValue = Mathf.PerlinNoise(X, Y);
 			height += perlinValue * amplitude;

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9c214aea005e8948a0e5b828aa9a354, type: 3}
+  m_Name: BlockTexture
+  m_EditorClassIdentifier: 
+  textureTileSize: 16
+  texture: {fileID: 2800000, guid: d7c7ad55bbc5da148a21be0d7b24a0c0, type: 3}
+  blocks:
+  - BlockType: 1
+    faceUp: {x: 0, y: 0}
+    faceDown: {x: 0, y: 0}
+    faceLeft: {x: 0, y: 0}
+    faceRight: {x: 0, y: 0}
+    faceFront: {x: 0, y: 0}
+    faceBack: {x: 0, y: 0}
+  - BlockType: 2
+    faceUp: {x: 1, y: 0}
+    faceDown: {x: 0, y: 0}
+    faceLeft: {x: 2, y: 0}
+    faceRight: {x: 2, y: 0}
+    faceFront: {x: 2, y: 0}
+    faceBack: {x: 2, y: 0}

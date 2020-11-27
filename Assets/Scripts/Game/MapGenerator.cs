@@ -1,10 +1,17 @@
-﻿using System.Collections;
+﻿using System.Linq;
+using System.Threading;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
+
+using ChunkKey = UnityEngine.Vector2Int;
+using ChunkKeyData = System.Collections.Generic.KeyValuePair<UnityEngine.Vector2Int, ChunkData>;
 
 public class MapGenerator : MonoBehaviour
 {
+	static MapGenerator instance = null;
+	public static TextureData TextureData { get => instance.textureData; }
+
 	[Header("Parameters")]
 	[SerializeField] int seed = 0;
 	[SerializeField] int octaves = 4;
@@ -15,32 +22,32 @@ public class MapGenerator : MonoBehaviour
 	[Header("Game")]
 	[SerializeField] int nbChunk = 10;
 	[SerializeField] GameObject chunkPrefab = null;
+	[SerializeField] TextureData textureData = null;
 
 	HeightMap heightMap = null;
 
-	Dictionary<Vector2Int, ChunkData> loadedChunkDatas = new Dictionary<Vector2Int, ChunkData>();
-
-	ChunkData CreateChunkData(Vector2 chunkPosition)
+	ChunkData CreateChunkData(ChunkKey chunkKey)
 	{
+		Vector3 chunkWorldPosition = new Vector3(chunkKey.x, 0.0f, chunkKey.y) * Chunk.ChunkSize;
+
 		ChunkData chunkData = new ChunkData();
-		chunkData.position = new Vector3(chunkPosition.x, 0.0f, chunkPosition.y);
+		chunkData.position = chunkWorldPosition;
 
 		for (int k = 0; k < Chunk.ChunkHeight; k++)
-		{
 			for (int j = 0; j < Chunk.ChunkSize; j++)
-			{
 				for (int i = 0; i < Chunk.ChunkSize; i++)
 				{
-					chunkData.cubeTypes[i, j, k] = CubeType.Air;
+					chunkData.blocks[i, j, k] = new Block();
+					var blockPosition = new Vector3(i - Chunk.ChunkRadius, k, j - Chunk.ChunkRadius);
+					chunkData.blocks[i, j, k].position = blockPosition;
+					chunkData.blocks[i, j, k].type = BlockType.Air;
 
-					if (!(k > heightMap.GetHeight(chunkPosition + new Vector2(i - Chunk.ChunkSize / 2, j - Chunk.ChunkSize / 2)) * Chunk.ChunkHeight))
-					{
-						chunkData.cubeTypes[i, j, k] = CubeType.Solid;
-					}
+					var height = heightMap.GetHeight(chunkWorldPosition.x + blockPosition.x , chunkWorldPosition.z + blockPosition.z);
+					if (!(k > height * Chunk.ChunkHeight))
+						chunkData.blocks[i, j, k].type = BlockType.Grass;
 				}
-			}
-		}
-		chunkData.CalculateMatrices();
+
+		chunkData.CalculateMeshData();
 
 		return chunkData;
 	}
@@ -52,50 +59,106 @@ public class MapGenerator : MonoBehaviour
 		chunkData.parent = chunk;
 	}
 
-	void CheckChunk(Vector2Int playerPosition)
+	readonly object loadingLock = new object();
+	Dictionary<ChunkKey, ChunkData> loadedChunkDic = new Dictionary<ChunkKey, ChunkData>();
+	Queue<ChunkKeyData> loadingChunkQueue = new Queue<ChunkKeyData>();
+	Queue<ChunkKey> unloadingChunkQueue = new Queue<ChunkKey>();
+
+	void StartLoadingChunkThread()
 	{
-		var keys = MathfPlus.GetAllPointInRadius(nbChunk);
-		foreach (var key in keys)
+		var playerKeyPosition = GetKeyFromWorldPosition(PlayerController.Position);
+		var keysToCheck = MathfPlus.GetAllPointInRadius(nbChunk);
+
+		new Thread(() => LoadingChunkThread(keysToCheck, playerKeyPosition)).Start();
+	}
+	void LoadingChunkThread(ChunkKey[] keys, ChunkKey playerKey)
+	{
+		lock (loadingLock)
 		{
-			var tmp = playerPosition + key;
-			if (!loadedChunkDatas.ContainsKey(tmp))
+			foreach (var key in keys)
 			{
-				var chunkData = CreateChunkData(tmp * Chunk.ChunkSize);
-				CreateChunk(chunkData);
-				loadedChunkDatas.Add(tmp, chunkData);
+				var chunkKey = playerKey + key;
+				if (!ChunkIsLoaded(chunkKey) && !ChunkIsLoading(chunkKey))
+				{
+					var chunkData = CreateChunkData(chunkKey);
+					loadingChunkQueue.Enqueue(new ChunkKeyData(chunkKey, chunkData));
+				}
+			}
+
+			foreach (var loadedChunk in loadedChunkDic)
+			{
+				if ((loadedChunk.Key - playerKey).magnitude > nbChunk && !ChunkIsUnloading(loadedChunk.Key))
+				{
+					unloadingChunkQueue.Enqueue(loadedChunk.Key);
+				}
+			}
+		}
+	}
+	void ProcessLoadChunk()
+	{
+		if (Monitor.TryEnter(loadingLock))
+		{
+			for (int i = 0; i < unloadingChunkQueue.Count; i++)
+			{
+				var keyToRemove = unloadingChunkQueue.Dequeue();
+				Destroy(loadedChunkDic[keyToRemove].parent.gameObject);
+				loadedChunkDic.Remove(keyToRemove);
+			}
+
+			for (int i = 0; i < loadingChunkQueue.Count; i++)
+			{
+				var chunkKeyData = loadingChunkQueue.Dequeue();
+				CreateChunk(chunkKeyData.Value);
+				loadedChunkDic.Add(chunkKeyData.Key, chunkKeyData.Value);
+			}
+
+			Monitor.Exit(loadingLock);
+		}
+	}
+
+	ChunkKey GetKeyFromWorldPosition(Vector3 position)
+	{
+		return new Vector2Int(Mathf.RoundToInt(position.x / Chunk.ChunkSize), Mathf.RoundToInt(position.z / Chunk.ChunkSize));
+	}
+	bool ChunkIsLoaded(ChunkKey key)
+	{
+		return loadedChunkDic.ContainsKey(key);
+	}
+	bool ChunkIsLoading(ChunkKey key)
+	{
+		foreach (var chunkKeyData in loadingChunkQueue)
+		{
+			if (chunkKeyData.Key == key)
+			{
+				return true;
 			}
 		}
 
-		List<Vector2Int> keysToRemove = new List<Vector2Int>();
-		foreach (var loadedChunk in loadedChunkDatas)
-		{
-			if ((loadedChunk.Key - playerPosition).magnitude > nbChunk)
-			{
-				keysToRemove.Add(loadedChunk.Key);
-			}
-		}
-
-		keysToRemove.ForEach(item => {
-			Destroy(loadedChunkDatas[item].parent);
-			loadedChunkDatas.Remove(item);
-		});
+		return false;
+	}
+	bool ChunkIsUnloading(ChunkKey key)
+	{
+		return unloadingChunkQueue.Contains(key);
 	}
 
 	private void Awake()
 	{
+		instance = this;
+
 		heightMap = new HeightMap(seed, octaves, lacunarity, persistance, scale);
 	}
 	private void Start()
 	{
-		var playerPosition = (PlayerController.Position / Chunk.ChunkSize).ToVector3Int();
-		CheckChunk(new Vector2Int(playerPosition.x, playerPosition.z));
+		StartLoadingChunkThread();
 	}
 	private void Update()
 	{
-		if ((PlayerController.Position / Chunk.ChunkSize).Round() != (PlayerController.PreviousPosition / Chunk.ChunkSize).Round())
+		//OnChunkEnter
+		if (GetKeyFromWorldPosition(PlayerController.Position) != GetKeyFromWorldPosition(PlayerController.PreviousPosition))
 		{
-			var playerPosition = (PlayerController.Position / Chunk.ChunkSize).RoundToInt();
-			CheckChunk(new Vector2Int(playerPosition.x, playerPosition.z));
+			StartLoadingChunkThread();
 		}
+
+		ProcessLoadChunk();
 	}
 }
