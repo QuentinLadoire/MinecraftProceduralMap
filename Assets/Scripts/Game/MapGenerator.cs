@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading;
+﻿using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,25 +25,31 @@ public class MapGenerator : MonoBehaviour
 
 	HeightMap heightMap = null;
 
+	Block CreateBlock(Vector3 blockPosition, BlockType blockType)
+	{
+		Block block = new Block();
+		block.Position = blockPosition;
+		block.Type = blockType;
+
+		return block;
+	}
 	ChunkData CreateChunkData(ChunkKey chunkKey)
 	{
-		Vector3 chunkWorldPosition = new Vector3(chunkKey.x, 0.0f, chunkKey.y) * Chunk.ChunkSize;
-
 		ChunkData chunkData = new ChunkData();
-		chunkData.position = chunkWorldPosition;
 
+		Vector3 chunkWorldPosition = new Vector3(chunkKey.x, 0.0f, chunkKey.y) * Chunk.ChunkSize;
+		chunkData.Position = chunkWorldPosition;
+
+		//Create blocks
 		for (int k = 0; k < Chunk.ChunkHeight; k++)
 			for (int j = 0; j < Chunk.ChunkSize; j++)
 				for (int i = 0; i < Chunk.ChunkSize; i++)
 				{
-					chunkData.blocks[i, j, k] = new Block();
 					var blockPosition = new Vector3(i - Chunk.ChunkRadius, k, j - Chunk.ChunkRadius);
-					chunkData.blocks[i, j, k].position = blockPosition;
-					chunkData.blocks[i, j, k].type = BlockType.Air;
+					var groundHeight = heightMap.GetHeight(chunkWorldPosition.x + blockPosition.x , chunkWorldPosition.z + blockPosition.z) * Chunk.ChunkHeight;
+					var blockType = (blockPosition.y > groundHeight) ? BlockType.Air : BlockType.Grass; // if block is below ground Height, create a block.
 
-					var height = heightMap.GetHeight(chunkWorldPosition.x + blockPosition.x , chunkWorldPosition.z + blockPosition.z);
-					if (!(k > height * Chunk.ChunkHeight))
-						chunkData.blocks[i, j, k].type = BlockType.Grass;
+					chunkData.Blocks[i, j, k] = CreateBlock(blockPosition, blockType);
 				}
 
 		chunkData.CalculateMeshData();
@@ -54,11 +59,12 @@ public class MapGenerator : MonoBehaviour
 	void CreateChunk(ChunkData chunkData)
 	{
 		var chunk = Instantiate(chunkPrefab).GetComponent<Chunk>();
-		chunk.transform.position = chunkData.position;
+		chunk.transform.position = chunkData.Position;
 		chunk.ChunkData = chunkData;
-		chunkData.parent = chunk;
+		chunkData.Parent = chunk;
 	}
 
+	#region Threading Chunk Loading
 	readonly object loadingLock = new object();
 	Dictionary<ChunkKey, ChunkData> loadedChunkDic = new Dictionary<ChunkKey, ChunkData>();
 	Queue<ChunkKeyData> loadingChunkQueue = new Queue<ChunkKeyData>();
@@ -101,7 +107,7 @@ public class MapGenerator : MonoBehaviour
 			for (int i = 0; i < unloadingChunkQueue.Count; i++)
 			{
 				var keyToRemove = unloadingChunkQueue.Dequeue();
-				Destroy(loadedChunkDic[keyToRemove].parent.gameObject);
+				Destroy(loadedChunkDic[keyToRemove].Parent.gameObject);
 				loadedChunkDic.Remove(keyToRemove);
 			}
 
@@ -140,6 +146,7 @@ public class MapGenerator : MonoBehaviour
 	{
 		return unloadingChunkQueue.Contains(key);
 	}
+	#endregion
 
 	private void Awake()
 	{

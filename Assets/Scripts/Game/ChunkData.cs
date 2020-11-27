@@ -4,11 +4,12 @@ using UnityEngine;
 
 public class ChunkData
 {
-	public Chunk parent = null;
+	public Chunk Parent { get; set; } = null;
 
-	public Vector3 position = Vector3.zero;
-	public Block[,,] blocks = new Block[Chunk.ChunkSize, Chunk.ChunkSize, Chunk.ChunkHeight];
-	public MeshData meshData = null;
+	public Vector3 Position { get; set; } = Vector3.zero;
+	public Block[,,] Blocks { get; set; } = new Block[Chunk.ChunkSize, Chunk.ChunkSize, Chunk.ChunkHeight];
+
+	MeshData meshData = null;
 
 	public void CalculateMeshData()
 	{
@@ -17,9 +18,9 @@ public class ChunkData
 		for (int j = 0; j < Chunk.ChunkSize; j++)
 			for (int i = 0; i < Chunk.ChunkSize; i++)
 				for (int k = Chunk.ChunkHeight - 1; k >= 0; k--)
-					if (blocks[i, j, k].type == BlockType.Grass)
+					if (Blocks[i, j, k].Type == BlockType.Grass) // Add the first block of the ground at column(i, j)
 					{
-						meshData += blocks[i, j, k].CreateMeshData();
+						meshData += Blocks[i, j, k].CreateMeshData();
 						break;
 					}
 	}
