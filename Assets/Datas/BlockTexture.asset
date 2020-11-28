@@ -29,3 +29,17 @@ MonoBehaviour:
     faceRight: {x: 2, y: 0}
     faceFront: {x: 2, y: 0}
     faceBack: {x: 2, y: 0}
+  - BlockType: 3
+    faceUp: {x: 1, y: 1}
+    faceDown: {x: 1, y: 1}
+    faceLeft: {x: 0, y: 1}
+    faceRight: {x: 0, y: 1}
+    faceFront: {x: 0, y: 1}
+    faceBack: {x: 0, y: 1}
+  - BlockType: 4
+    faceUp: {x: 2, y: 1}
+    faceDown: {x: 2, y: 1}
+    faceLeft: {x: 2, y: 1}
+    faceRight: {x: 2, y: 1}
+    faceFront: {x: 2, y: 1}
+    faceBack: {x: 2, y: 1}

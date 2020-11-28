@@ -8,6 +8,8 @@ public enum BlockType
 	Air,
 	Dirt,
 	Grass,
+	Wood,
+	Leaves,
 	Count
 }
 

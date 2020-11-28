@@ -18,10 +18,11 @@ public class ChunkData
 		for (int j = 0; j < Chunk.ChunkSize; j++)
 			for (int i = 0; i < Chunk.ChunkSize; i++)
 				for (int k = Chunk.ChunkHeight - 1; k >= 0; k--)
-					if (Blocks[i, j, k].Type == BlockType.Grass) // Add the first block of the ground at column(i, j)
+					if (Blocks[i, j, k].Type != BlockType.Air) // Add the first block of the ground at column(i, j)
 					{
 						meshData += Blocks[i, j, k].CreateMeshData();
-						break;
+
+						if (Blocks[i, j, k].Type == BlockType.Grass) break;
 					}
 	}
 	public Mesh CreateMesh()

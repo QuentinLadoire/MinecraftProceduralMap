@@ -47,7 +47,12 @@ MonoBehaviour:
   octaves: 4
   lacunarity: 2
   persistance: 0.5
-  scale: {x: 20, y: 40}
-  nbChunk: 10
+  scale: {x: 40, y: 80}
+  seedTree: 0
+  octavesTree: 4
+  lacunarityTree: 2
+  persistanceTree: 0.5
+  scaleTree: {x: 20, y: 40}
+  nbChunk: 5
   chunkPrefab: {fileID: 6535691625715422120, guid: 48887fa40362ab04988d1101529f9425, type: 3}
   textureData: {fileID: 11400000, guid: 46a15b8ae1ee9b54e8927a21185ee90d, type: 2}

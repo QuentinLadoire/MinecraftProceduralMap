@@ -463,16 +463,28 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
-      propertyPath: nbChunk
-      value: 5
+      propertyPath: octavesTree
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
-      propertyPath: scale.x
-      value: 40
+      propertyPath: scaleTree.x
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
-      propertyPath: scale.y
-      value: 80
+      propertyPath: scaleTree.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
+      propertyPath: lacunarityTree
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
+      propertyPath: persistanceTree
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
+      propertyPath: treeProbability
+      value: 0.85
       objectReference: {fileID: 0}
     - target: {fileID: 573669782037790339, guid: 6898b2f61f4324042825b03515da17db, type: 3}
       propertyPath: m_Name
