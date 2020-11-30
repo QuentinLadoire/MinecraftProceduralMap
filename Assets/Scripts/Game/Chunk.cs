@@ -5,7 +5,7 @@ using UnityEngine;
 public class Chunk : MonoBehaviour
 {
 	public const int ChunkSize = 15;
-	public const int ChunkHeight = 15;
+	public const int ChunkHeight = 50;
 	public const float ChunkRadius = ChunkSize / 2.0f;
 
 	public ChunkData ChunkData { get; set; } = null;

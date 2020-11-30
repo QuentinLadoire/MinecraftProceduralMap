@@ -17,6 +17,8 @@ public class MapGeneratorEditor : Editor
 	SerializedProperty persistanceProperty = null;
 	SerializedProperty scaleProperty = null;
 
+	SerializedProperty groundHeightMaxProperty = null;
+
 	// Tree HeightMap Parameters
 	SerializedProperty seedTreeProperty = null;
 	SerializedProperty octavesTreeProperty = null;
@@ -30,6 +32,9 @@ public class MapGeneratorEditor : Editor
 	SerializedProperty nbChunkProperty = null;
 	SerializedProperty chunkPrefabProperty = null;
 	SerializedProperty textureDataProperty = null;
+
+	// Debug Parameters
+	SerializedProperty debugTextProperty = null;
 
 	Texture2D groundHeightMapPreview = null;
 	Texture2D treeHeightMapPreview = null;
@@ -103,6 +108,8 @@ public class MapGeneratorEditor : Editor
 		persistanceProperty = serializedObject.FindProperty("persistance");
 		scaleProperty = serializedObject.FindProperty("scale");
 
+		groundHeightMaxProperty = serializedObject.FindProperty("groundHeightMax");
+
 		// Tree HeightMap Parameters
 		seedTreeProperty = serializedObject.FindProperty("seedTree");
 		octavesTreeProperty = serializedObject.FindProperty("octavesTree");
@@ -116,6 +123,9 @@ public class MapGeneratorEditor : Editor
 		nbChunkProperty = serializedObject.FindProperty("nbChunk");
 		chunkPrefabProperty = serializedObject.FindProperty("chunkPrefab");
 		textureDataProperty = serializedObject.FindProperty("textureData");
+
+		// Debug Parameters
+		debugTextProperty = serializedObject.FindProperty("debugText");
 
 		GenerateGroundTexture();
 		GenerateTreeTexture();
@@ -134,6 +144,8 @@ public class MapGeneratorEditor : Editor
 		EditorGUILayout.PropertyField(lacunarityProperty);
 		EditorGUILayout.PropertyField(persistanceProperty);
 		EditorGUILayout.PropertyField(scaleProperty);
+
+		EditorGUILayout.PropertyField(groundHeightMaxProperty);
 
 		GUILayout.Box(groundHeightMapPreview);
 		if (GUILayout.Button(new GUIContent("Generate Ground"))) GenerateGroundTexture();
@@ -160,6 +172,11 @@ public class MapGeneratorEditor : Editor
 		EditorGUILayout.PropertyField(nbChunkProperty);
 		EditorGUILayout.PropertyField(chunkPrefabProperty);
 		EditorGUILayout.PropertyField(textureDataProperty);
+
+		// Debug Parameters
+		EditorGUILayout.Space();
+		EditorGUILayout.LabelField(new GUIContent("Debug"), titleStyle);
+		EditorGUILayout.PropertyField(debugTextProperty);
 
 		serializedObject.ApplyModifiedProperties();
 	}

@@ -25,10 +25,12 @@ public enum BlockFace
 	Count
 }
 
-public class Block
+public struct Block
 {
-	public Vector3 Position { get; set; } = Vector3.zero;
-	public BlockType Type { get; set; } = BlockType.None;
+	public static Block Default = new Block(Vector3.zero, BlockType.None);
+
+	public Vector3 Position { get; set; }
+	public BlockType Type { get; set; }
 
 	public MeshData CreateMeshData()
 	{
@@ -125,5 +127,11 @@ public class Block
 		meshData.AddUV((faceUV + new Vector2(1.0f, 0.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
 
 		return meshData;
+	}
+
+	public Block(Vector3 position, BlockType type)
+	{
+		Position = position;
+		Type = type;
 	}
 }

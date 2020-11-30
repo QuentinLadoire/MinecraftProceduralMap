@@ -1,7 +1,9 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 using ChunkKey = UnityEngine.Vector2Int;
 using ChunkKeyData = System.Collections.Generic.KeyValuePair<UnityEngine.Vector2Int, ChunkData>;
@@ -18,6 +20,8 @@ public class MapGenerator : MonoBehaviour
 	[SerializeField] [Range(0.0f, 1.0f)] float persistance = 0.5f;
 	[SerializeField] Vector2 scale = new Vector2(20, 40);
 
+	[SerializeField] int groundHeightMax = 15; 
+
 	// Tree HeightMap Parameters
 	[SerializeField] int seedTree = 0;
 	[SerializeField] int octavesTree = 4;
@@ -31,6 +35,12 @@ public class MapGenerator : MonoBehaviour
 	[SerializeField] int nbChunk = 10;
 	[SerializeField] GameObject chunkPrefab = null;
 	[SerializeField] TextureData textureData = null;
+
+	//Debug Parameters
+	[SerializeField] Text debugText = null;
+	float globalTimeGeneration = 0.0f;
+	float globalMeshDataTimeGeneration = 0.0f;
+	float blockDataTimeGeneration = 0.0f;
 
 	readonly object logLock = new object();
 	Queue<string> logQueue = new Queue<string>();
@@ -57,65 +67,61 @@ public class MapGenerator : MonoBehaviour
 	public HeightMap HeightMap { get; private set; } = null;
 	public HeightMap TreeHeightMap { get; private set; } = null;
 
-	Block CreateBlock(Vector3 blockPosition, BlockType blockType)
+	void CreateTree(ChunkData chunkData, int i, int j, int k, Vector3 blockPosition)
 	{
-		Block block = new Block();
-		block.Position = blockPosition;
-		block.Type = blockType;
+		var treeHeight = TreeHeightMap.GetHeight(chunkData.Position.x + blockPosition.x, chunkData.Position.z + blockPosition.z);
+		if (treeHeight > treeProbability)
+		{
+			// Create Leaves
+			for (int kk = 4; kk < 8; kk++)
+				for (int jj = -2; jj < 3; jj++)
+					for (int ii = -2; ii < 3; ii++)
+						if ((Mathf.Abs(ii) + Mathf.Abs(kk - 5) + Mathf.Abs(jj) < 5))
+							chunkData.SetBlock(i + ii, j + jj, k + kk, BlockType.Leaves, blockPosition + new Vector3(ii, kk, jj));
 
-		return block;
+			// Create Trunk
+			chunkData.SetBlock(i, j, k, BlockType.Wood, blockPosition);
+			chunkData.SetBlock(i, j, k + 1, BlockType.Wood, blockPosition + new Vector3(0.0f, 1.0f, 0.0f));
+			chunkData.SetBlock(i, j, k + 2, BlockType.Wood, blockPosition + new Vector3(0.0f, 2.0f, 0.0f));
+			chunkData.SetBlock(i, j, k + 3, BlockType.Wood, blockPosition + new Vector3(0.0f, 3.0f, 0.0f));
+			chunkData.SetBlock(i, j, k + 4, BlockType.Wood, blockPosition + new Vector3(0.0f, 4.0f, 0.0f));
+			chunkData.SetBlock(i, j, k + 5, BlockType.Wood, blockPosition + new Vector3(0.0f, 5.0f, 0.0f));
+		}
 	}
 	ChunkData CreateChunkData(ChunkKey chunkKey)
 	{
 		ChunkData chunkData = new ChunkData();
-
+		
 		Vector3 chunkWorldPosition = new Vector3(chunkKey.x, 0.0f, chunkKey.y) * Chunk.ChunkSize;
 		chunkData.Position = chunkWorldPosition;
 
 		//Create blocks
-		for (int k = 0; k < Chunk.ChunkHeight; k++)
-			for (int j = 0; j < Chunk.ChunkSize; j++)
-				for (int i = 0; i < Chunk.ChunkSize; i++)
-				{
-					var blockPosition = new Vector3(i - Chunk.ChunkRadius, k, j - Chunk.ChunkRadius);
-					var height = HeightMap.GetHeight(chunkWorldPosition.x + blockPosition.x , chunkWorldPosition.z + blockPosition.z);
-					var groundHeight = height * Chunk.ChunkHeight;
-					var blockType = (blockPosition.y > groundHeight) ? BlockType.Air : BlockType.Grass; // if block is below ground Height, create a block.
-
-					chunkData.Blocks[i, j, k] = CreateBlock(blockPosition, blockType);
-				}
-
 		for (int j = 0; j < Chunk.ChunkSize; j++)
 			for (int i = 0; i < Chunk.ChunkSize; i++)
-				for (int k = Chunk.ChunkHeight - 1; k >= 0; k--)
+			{
+				bool checkTree = true;
+				for (int k = 0; k < Chunk.ChunkHeight; k++)
 				{
-					if (chunkData.Blocks[i, j, k].Type == BlockType.Grass)
+					var blockPosition = new Vector3(i - Chunk.ChunkRadius, k, j - Chunk.ChunkRadius);
+					var height = HeightMap.GetHeight(chunkWorldPosition.x + blockPosition.x, chunkWorldPosition.z + blockPosition.z);
+					var groundHeight = height * groundHeightMax;
+					var blockType = (blockPosition.y > groundHeight) ? BlockType.Air : BlockType.Grass; // if block is below ground Height, create a block.
+
+					if (chunkData.Blocks[i, j, k].Type == BlockType.None) chunkData.SetBlock(i, j, k, blockType, blockPosition);
+
+					//Check block type if is the first Ground Layer
+					if (checkTree && blockType == BlockType.Air)
 					{
-						var height = TreeHeightMap.GetHeight(i - Chunk.ChunkRadius, j - Chunk.ChunkRadius);
-						if (height > treeProbability)
-						{
-							// Create Leaves
-							for (int kk = 4; kk < 8; kk++)
-								for (int jj = -2; jj < 3; jj++)
-									for (int ii = -2; ii < 3; ii++)
-										if ((Mathf.Abs(ii) + Mathf.Abs(kk - 5) + Mathf.Abs(jj) < 5))
-											if (i + ii < Chunk.ChunkSize && i + ii > 0 && j + jj < Chunk.ChunkSize && j + jj > 0 && k + kk < Chunk.ChunkHeight)
-												chunkData.Blocks[i + ii, j + jj, k + kk].Type = BlockType.Leaves;
+						checkTree = false;
 
-							// Create Trunk
-							if (k + 1 < Chunk.ChunkHeight) chunkData.Blocks[i, j, k + 1].Type = BlockType.Wood;
-							if (k + 2 < Chunk.ChunkHeight) chunkData.Blocks[i, j, k + 2].Type = BlockType.Wood;
-							if (k + 3 < Chunk.ChunkHeight) chunkData.Blocks[i, j, k + 3].Type = BlockType.Wood;
-							if (k + 4 < Chunk.ChunkHeight) chunkData.Blocks[i, j, k + 4].Type = BlockType.Wood;
-							if (k + 5 < Chunk.ChunkHeight) chunkData.Blocks[i, j, k + 5].Type = BlockType.Wood;
-							if (k + 6 < Chunk.ChunkHeight) chunkData.Blocks[i, j, k + 6].Type = BlockType.Wood;
-						}
-
-						break;
+						CreateTree(chunkData, i, j, k, blockPosition);
 					}
 				}
+			}
 
+		var startMeshDataTimeGeneration = DateTime.Now;
 		chunkData.CalculateMeshData();
+		globalMeshDataTimeGeneration += (float)DateTime.Now.Subtract(startMeshDataTimeGeneration).TotalSeconds;
 
 		return chunkData;
 	}
@@ -124,7 +130,16 @@ public class MapGenerator : MonoBehaviour
 		var chunk = Instantiate(chunkPrefab).GetComponent<Chunk>();
 		chunk.transform.position = chunkData.Position;
 		chunk.ChunkData = chunkData;
-		chunkData.Parent = chunk;
+		chunkData.ChunkParent = chunk;
+	}
+
+	volatile bool updateDebugText = false;
+	void UpdateDebugText()
+	{
+		debugText.text = 
+			"Chunk Generation\n" +
+			"	Global Time : " + ((int)(globalTimeGeneration * 100)) / 100.0f + "s\n" +
+			"	Global MeshData : " + ((int)(globalMeshDataTimeGeneration * 100)) / 100.0f + "s\n";
 	}
 
 	#region Threading Chunk Loading
@@ -132,6 +147,7 @@ public class MapGenerator : MonoBehaviour
 	Dictionary<ChunkKey, ChunkData> loadedChunkDic = new Dictionary<ChunkKey, ChunkData>();
 	Queue<ChunkKeyData> loadingChunkQueue = new Queue<ChunkKeyData>();
 	Queue<ChunkKey> unloadingChunkQueue = new Queue<ChunkKey>();
+	volatile bool forceUpdate = false;
 
 	void StartLoadingChunkThread()
 	{
@@ -142,8 +158,12 @@ public class MapGenerator : MonoBehaviour
 	}
 	void LoadingChunkThread(ChunkKey[] keys, ChunkKey playerKey)
 	{
+		while (forceUpdate) ;
+
 		lock (loadingLock)
 		{
+			globalMeshDataTimeGeneration = 0.0f;
+			var startGlobalTimeGeneration = DateTime.Now;
 			foreach (var key in keys)
 			{
 				var chunkKey = playerKey + key;
@@ -153,6 +173,9 @@ public class MapGenerator : MonoBehaviour
 					loadingChunkQueue.Enqueue(new ChunkKeyData(chunkKey, chunkData));
 				}
 			}
+			globalTimeGeneration = (float)DateTime.Now.Subtract(startGlobalTimeGeneration).TotalSeconds;
+
+			updateDebugText = true;
 
 			foreach (var loadedChunk in loadedChunkDic)
 			{
@@ -162,6 +185,8 @@ public class MapGenerator : MonoBehaviour
 				}
 			}
 		}
+
+		forceUpdate = true;
 	}
 	void ProcessLoadChunk()
 	{
@@ -171,7 +196,7 @@ public class MapGenerator : MonoBehaviour
 			for (int i = 0; i < count; i++)
 			{
 				var keyToRemove = unloadingChunkQueue.Dequeue();
-				Destroy(loadedChunkDic[keyToRemove].Parent.gameObject);
+				Destroy(loadedChunkDic[keyToRemove].ChunkParent.gameObject);
 				loadedChunkDic.Remove(keyToRemove);
 			}
 
@@ -182,6 +207,8 @@ public class MapGenerator : MonoBehaviour
 				CreateChunk(chunkKeyData.Value);
 				loadedChunkDic.Add(chunkKeyData.Key, chunkKeyData.Value);
 			}
+
+			forceUpdate = false;
 
 			Monitor.Exit(loadingLock);
 		}
@@ -230,6 +257,12 @@ public class MapGenerator : MonoBehaviour
 		if (GetKeyFromWorldPosition(PlayerController.Position) != GetKeyFromWorldPosition(PlayerController.PreviousPosition))
 		{
 			StartLoadingChunkThread();
+		}
+
+		if (updateDebugText)
+		{
+			UpdateDebugText();
+			updateDebugText = false;
 		}
 
 		ProcessLoadChunk();
