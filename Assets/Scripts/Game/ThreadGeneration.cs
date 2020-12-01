@@ -6,6 +6,14 @@ using UnityEngine;
 using ChunkKey = UnityEngine.Vector2Int;
 using ChunkDataDico = System.Collections.Generic.Dictionary<UnityEngine.Vector2Int, ChunkData>;
 
+public enum ThreadState
+{
+	None = -1,
+	Waiting,
+	Generate,
+	Count
+}
+
 public class ThreadGeneration : MonoBehaviour
 {
 	[SerializeField] MapGenerator mapGenerator = null;
@@ -13,9 +21,11 @@ public class ThreadGeneration : MonoBehaviour
 
 	Thread generationThread = null;
 
-	volatile bool shutdown = false;
-	volatile bool updateChunk = true;
-	volatile bool forceUpdate = false;
+	volatile bool shutdownRequest = false;
+	volatile bool generationRequest = true;
+	volatile bool resolveRequest = false;
+
+	public ThreadState ThreadState { get; private set; } = ThreadState.None;
 
 	ChunkKey[] keys = null;
 	ChunkKey playerKeyPosition = ChunkKey.zero;
@@ -42,13 +52,14 @@ public class ThreadGeneration : MonoBehaviour
 
 	void GenerateChunkData()
 	{
+		// for all chunk around the player
 		foreach (var key in keys)
 		{
 			var chunkKey = playerKeyPosition + key;
-			if (!chunkDataDico.ContainsKey(chunkKey))
+			if (!chunkDataDico.ContainsKey(chunkKey)) // check if the chunkdata already exist 
 			{
-				var chunkData = mapGenerator.GenerateChunkData(key);
-				chunkDataDico.Add(key, chunkData);
+				var chunkData = mapGenerator.GenerateChunkData(chunkKey);	// Generate and 
+				chunkDataDico.Add(chunkKey, chunkData);						// Add to dico
 			}
 		}
 	}
@@ -59,43 +70,45 @@ public class ThreadGeneration : MonoBehaviour
 	}
 	void CheckChunkToCreateOrDestroy()
 	{
+		// For all chunkData in the dico
 		foreach (var keyChunkDataValue in chunkDataDico)
 		{
 			var chunkSqrDistance = (keyChunkDataValue.Key - playerKeyPosition).sqrMagnitude;
-			if (chunkSqrDistance <= mapGenerator.NbChunk * mapGenerator.NbChunk)
+			if (chunkSqrDistance <= mapGenerator.ChunkViewRadius * mapGenerator.ChunkViewRadius) // Check if the distance with the player is less or equal as the chunkViewRadius
 			{
-				if (!chunkCreated.Contains(keyChunkDataValue.Value))
-				{
-					//CreateChunk
-					chunkToCreate.Enqueue(keyChunkDataValue.Value);
-				}
+				// if the condition is true, check if the chunk as need to be created 
+				if (!chunkCreated.Contains(keyChunkDataValue.Value))	// check if is not already created
+					chunkToCreate.Enqueue(keyChunkDataValue.Value);		// and if true add the chunkdata to the queue for creating the chunk
 			}
 			else
 			{
-				if (chunkCreated.Contains(keyChunkDataValue.Value))
-				{
-					//DestroyCHunk
-					chunkToDestroy.Enqueue(keyChunkDataValue.Value);
-				}
+				// if the condition is false, check if the chunk as need to be destroy
+				if (chunkCreated.Contains(keyChunkDataValue.Value))		// Check if is created
+					chunkToDestroy.Enqueue(keyChunkDataValue.Value);	// and if true add the chundata to the queue for destroying the chunk
 			}
 		}
 	}
 	void GenerationThread()
 	{
-		while (!shutdown)
+		while (!shutdownRequest)
 		{
-			while (!updateChunk || forceUpdate) ; // Wait
-			updateChunk = false;
+			ThreadState = ThreadState.Waiting;
 
-			GenerateChunkData();
+			while (!generationRequest || resolveRequest) ; // Wait if no generation request or if resolving generation is in process
+			generationRequest = false; // reset the generation request
 
-			GenerateMeshData();
+			ThreadState = ThreadState.Generate;
 
-			CheckChunkToCreateOrDestroy();
+			GenerateChunkData(); // Generate ChunkData if doesnt exist
 
-			forceUpdate = true;
+			GenerateMeshData(); // Recalculate the MeshData if a modification as applied
+
+			CheckChunkToCreateOrDestroy(); // Check what chunk has need to be create or destroy
+
+			resolveRequest = true; // Set true for resolving the generation in main thread
 		}
 	}
+
 	void ResolveChunkToCreate()
 	{
 		var count = chunkToCreate.Count;
@@ -114,12 +127,12 @@ public class ThreadGeneration : MonoBehaviour
 	}
 	void ResolveGenerationThread()
 	{
-		if (forceUpdate)
+		if (resolveRequest)
 		{
 			ResolveChunkToCreate();
 			ResolveChunkToDestroy();
 
-			forceUpdate = false;
+			resolveRequest = false;
 		}
 	}
 
@@ -129,6 +142,15 @@ public class ThreadGeneration : MonoBehaviour
 		generationThread.Start();
 	}
 
+	void ChunkGenerationIsTrigger()
+	{
+		if (GetKeyFromWorldPosition(PlayerController.Position) != GetKeyFromWorldPosition(PlayerController.PreviousPosition))
+		{
+			playerKeyPosition = GetKeyFromWorldPosition(PlayerController.Position);
+			generationRequest = true;
+		}
+	}
+
 	ChunkKey GetKeyFromWorldPosition(Vector3 position)
 	{
 		return new ChunkKey(Mathf.RoundToInt(position.x / Chunk.ChunkSize), Mathf.RoundToInt(position.z / Chunk.ChunkSize));
@@ -136,20 +158,13 @@ public class ThreadGeneration : MonoBehaviour
 
 	private void Start()
 	{
-		keys = MathfPlus.GetAllPointInRadius(mapGenerator.NbChunk);
+		keys = MathfPlus.GetAllPointInRadius(mapGenerator.ChunkViewRadius);
 
-		if (mapGenerator != null)
-		{
-			StartThread();
-		}
+		if (mapGenerator != null) StartThread();
 	}
 	private void Update()
 	{
-		if (GetKeyFromWorldPosition(PlayerController.Position) != GetKeyFromWorldPosition(PlayerController.PreviousPosition))
-		{
-			playerKeyPosition = GetKeyFromWorldPosition(PlayerController.Position);
-			updateChunk = true;
-		}
+		ChunkGenerationIsTrigger();
 
 		ResolveGenerationThread();
 	}

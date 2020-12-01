@@ -13,7 +13,7 @@ public class MapGenerator : MonoBehaviour
 	static MapGenerator instance = null;
 	public static TextureData TextureData { get => instance.textureData; }
 
-	public int NbChunk { get => nbChunk; }
+	public int ChunkViewRadius { get => nbChunk; }
 
 	// Ground HeightMap Parameters
 	[SerializeField] int seed = 0;

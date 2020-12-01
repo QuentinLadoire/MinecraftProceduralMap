@@ -12,6 +12,8 @@ public class ChunkData
 
 	MeshData meshData = null;
 
+	bool isModified = false;
+
 	public ChunkData()
 	{
 		Blocks = new Block[Chunk.ChunkSize, Chunk.ChunkSize, Chunk.ChunkHeight];
@@ -27,6 +29,8 @@ public class ChunkData
 		if (!(i < Chunk.ChunkSize && j < Chunk.ChunkSize && k < Chunk.ChunkHeight)) return;
 
 		Blocks[i, j, k].Type = blockType;
+
+		isModified = true;
 	}
 	public void SetBlock(int i, int j, int k, Vector3 position)
 	{
@@ -34,6 +38,8 @@ public class ChunkData
 		if (!(i < Chunk.ChunkSize && j < Chunk.ChunkSize && k < Chunk.ChunkHeight)) return;
 
 		Blocks[i, j, k].Position = position;
+
+		isModified = true;
 	}
 	public void SetBlock(int i, int j, int k, BlockType blockType, Vector3 position)
 	{
@@ -42,10 +48,14 @@ public class ChunkData
 
 		Blocks[i, j, k].Type = blockType;
 		Blocks[i, j, k].Position = position;
+
+		isModified = true;
 	}
 
 	public void CalculateMeshData()
 	{
+		if (!isModified) return;
+
 		meshData = new MeshData();
 
 		for (int j = 0; j < Chunk.ChunkSize; j++)

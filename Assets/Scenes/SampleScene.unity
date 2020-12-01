@@ -227,8 +227,9 @@ GameObject:
   - component: {fileID: 768681409}
   - component: {fileID: 768681408}
   - component: {fileID: 768681410}
+  - component: {fileID: 768681411}
   m_Layer: 5
-  m_Name: Background
+  m_Name: DebugGeneration
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -307,6 +308,20 @@ MonoBehaviour:
   m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
   m_EffectDistance: {x: 2, y: 2}
   m_UseGraphicAlpha: 0
+--- !u!114 &768681411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 768681406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d374c7c826092534dada72cb7889d9bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  debugText: {fileID: 2086314308}
+  threadGeneration: {fileID: 954775846}
 --- !u!1 &954775844
 GameObject:
   m_ObjectHideFlags: 0
