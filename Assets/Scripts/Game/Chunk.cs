@@ -18,6 +18,7 @@ public class Chunk : MonoBehaviour
 	}
 	private void Start()
 	{
+		ChunkData.CalculateMeshData();
 		meshFilter.mesh = ChunkData.CreateMesh();
 	}
 }

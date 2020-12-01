@@ -1,11 +1,8 @@
-﻿using System;
-using System.Threading;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 using ChunkKey = UnityEngine.Vector2Int;
-using ChunkKeyData = System.Collections.Generic.KeyValuePair<UnityEngine.Vector2Int, ChunkData>;
 
 public class MapGenerator : MonoBehaviour
 {
@@ -34,7 +31,6 @@ public class MapGenerator : MonoBehaviour
 
 	// Games Parameters
 	[SerializeField] int nbChunk = 10;
-	[SerializeField] GameObject chunkPrefab = null;
 	[SerializeField] TextureData textureData = null;
 
 	public HeightMap HeightMap { get; private set; } = null;
@@ -91,144 +87,6 @@ public class MapGenerator : MonoBehaviour
 
 		return chunkData;
 	}
-
-
-	ChunkData CreateChunkData(ChunkKey chunkKey)
-	{
-		ChunkData chunkData = new ChunkData();
-		
-		Vector3 chunkWorldPosition = new Vector3(chunkKey.x, 0.0f, chunkKey.y) * Chunk.ChunkSize;
-		chunkData.Position = chunkWorldPosition;
-
-		//Create blocks
-		for (int j = 0; j < Chunk.ChunkSize; j++)
-			for (int i = 0; i < Chunk.ChunkSize; i++)
-			{
-				bool checkTree = true;
-				for (int k = 0; k < Chunk.ChunkHeight; k++)
-				{
-					var blockPosition = new Vector3(i - Chunk.ChunkRadius, k, j - Chunk.ChunkRadius);
-					var height = HeightMap.GetHeight(chunkWorldPosition.x + blockPosition.x, chunkWorldPosition.z + blockPosition.z);
-					var groundHeight = height * groundHeightMax;
-					var blockType = (blockPosition.y > groundHeight) ? BlockType.Air : BlockType.Grass; // if block is below ground Height, create a block.
-
-					if (chunkData.Blocks[i, j, k].Type == BlockType.None) chunkData.SetBlock(i, j, k, blockType, blockPosition);
-
-					//Check block type if is the first Ground Layer
-					if (checkTree && blockType == BlockType.Air)
-					{
-						checkTree = false;
-
-						CreateTree(chunkData, i, j, k, blockPosition);
-					}
-				}
-			}
-
-		chunkData.CalculateMeshData();
-
-		return chunkData;
-	}
-	void CreateChunk(ChunkData chunkData)
-	{
-		var chunk = Instantiate(chunkPrefab).GetComponent<Chunk>();
-		chunk.transform.position = chunkData.Position;
-		chunk.ChunkData = chunkData;
-		chunkData.ChunkParent = chunk;
-	}
-
-	#region Threading Chunk Loading Old System
-	readonly object loadingLock = new object();
-	Dictionary<ChunkKey, ChunkData> loadedChunkDic = new Dictionary<ChunkKey, ChunkData>();
-	Queue<ChunkKeyData> loadingChunkQueue = new Queue<ChunkKeyData>();
-	Queue<ChunkKey> unloadingChunkQueue = new Queue<ChunkKey>();
-	volatile bool forceUpdate = false;
-
-	void StartLoadingChunkThread()
-	{
-		var playerKeyPosition = GetKeyFromWorldPosition(PlayerController.Position);
-		var keysToCheck = MathfPlus.GetAllPointInRadius(nbChunk);
-
-		new Thread(() => LoadingChunkThread(keysToCheck, playerKeyPosition)).Start();
-	}
-	void LoadingChunkThread(ChunkKey[] keys, ChunkKey playerKey)
-	{
-		while (forceUpdate) ;
-
-		lock (loadingLock)
-		{
-			var startGlobalTimeGeneration = DateTime.Now;
-			foreach (var key in keys)
-			{
-				var chunkKey = playerKey + key;
-				if (!ChunkIsLoaded(chunkKey) && !ChunkIsLoading(chunkKey))
-				{
-					var chunkData = CreateChunkData(chunkKey);
-					loadingChunkQueue.Enqueue(new ChunkKeyData(chunkKey, chunkData));
-				}
-			}
-
-			foreach (var loadedChunk in loadedChunkDic)
-			{
-				if ((loadedChunk.Key - playerKey).magnitude > nbChunk && !ChunkIsUnloading(loadedChunk.Key))
-				{
-					unloadingChunkQueue.Enqueue(loadedChunk.Key);
-				}
-			}
-		}
-
-		forceUpdate = true;
-	}
-	void ProcessLoadChunk()
-	{
-		if (Monitor.TryEnter(loadingLock))
-		{
-			var count = unloadingChunkQueue.Count;
-			for (int i = 0; i < count; i++)
-			{
-				var keyToRemove = unloadingChunkQueue.Dequeue();
-				Destroy(loadedChunkDic[keyToRemove].ChunkParent.gameObject);
-				loadedChunkDic.Remove(keyToRemove);
-			}
-
-			count = loadingChunkQueue.Count;
-			for (int i = 0; i < count; i++)
-			{
-				var chunkKeyData = loadingChunkQueue.Dequeue();
-				CreateChunk(chunkKeyData.Value);
-				loadedChunkDic.Add(chunkKeyData.Key, chunkKeyData.Value);
-			}
-
-			forceUpdate = false;
-
-			Monitor.Exit(loadingLock);
-		}
-	}
-
-	ChunkKey GetKeyFromWorldPosition(Vector3 position)
-	{
-		return new Vector2Int(Mathf.RoundToInt(position.x / Chunk.ChunkSize), Mathf.RoundToInt(position.z / Chunk.ChunkSize));
-	}
-	bool ChunkIsLoaded(ChunkKey key)
-	{
-		return loadedChunkDic.ContainsKey(key);
-	}
-	bool ChunkIsLoading(ChunkKey key)
-	{
-		foreach (var chunkKeyData in loadingChunkQueue)
-		{
-			if (chunkKeyData.Key == key)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-	bool ChunkIsUnloading(ChunkKey key)
-	{
-		return unloadingChunkQueue.Contains(key);
-	}
-	#endregion
 
 	private void Awake()
 	{

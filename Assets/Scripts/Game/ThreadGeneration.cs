@@ -24,7 +24,7 @@ public class ThreadGeneration : MonoBehaviour
 
 	volatile bool shutdownRequest = false;
 	volatile bool generationRequest = true;
-	volatile bool resolveRequest = false;
+	volatile bool resolveGenerationRequest = false;
 
 	public volatile bool updateDebugInfo = false;
 	public ThreadState ThreadState { get; private set; } = ThreadState.None;
@@ -32,7 +32,6 @@ public class ThreadGeneration : MonoBehaviour
 	public int InstantiatedChunkCount { get => chunkCreated.Count; }
 	public float GlobalGenerationTime { get; private set; } = 0.0f;
 	public float ChunkDataGenerationTime { get; private set; } = 0.0f;
-	public float MeshDataGenerationTime { get; private set; } = 0.0f;
 	public float CreateOrDestroyChunkTime { get; private set; } = 0.0f;
 
 	ChunkKey[] keys = null;
@@ -63,8 +62,18 @@ public class ThreadGeneration : MonoBehaviour
 		updateDebugInfo = true;
 		while (updateDebugInfo) ;
 	}
+	void WaitResolveGeneration()
+	{
+		resolveGenerationRequest = true;
+		while (resolveGenerationRequest) ;
+	}
+	void WaitGenerationRequest()
+	{
+		generationRequest = false;
+		while (!generationRequest) ;
+	}
 
-	void GenerateChunkData()
+	void GenerateChunkData(ChunkKey playerKeyPosition)
 	{
 		// for all chunk around the player
 		foreach (var key in keys)
@@ -77,12 +86,7 @@ public class ThreadGeneration : MonoBehaviour
 			}
 		}
 	}
-	void GenerateMeshData()
-	{
-		foreach (var keyChunkDataValue in chunkDataDico)
-			keyChunkDataValue.Value.CalculateMeshData();
-	}
-	void CheckChunkToCreateOrDestroy()
+	void CheckChunkToCreateOrDestroy(ChunkKey playerKeyPosition)
 	{
 		// For all chunkData in the dico
 		foreach (var keyChunkDataValue in chunkDataDico)
@@ -104,13 +108,18 @@ public class ThreadGeneration : MonoBehaviour
 	}
 	void GenerationThread()
 	{
+		bool firstFrame = true;
 		while (!shutdownRequest)
 		{
 			ThreadState = ThreadState.Waiting;
 			WaitDebugInfo();
 
-			while (!generationRequest || resolveRequest) if (shutdownRequest) return; // Wait if no generation request or if resolving generation is in process
-			generationRequest = false; // reset the generation request
+			if (!firstFrame)
+				WaitGenerationRequest(); // Wait if no generation request or if resolving generation is in process
+			else
+				firstFrame = false;
+
+			var playerKeyPositionTmp = playerKeyPosition;
 
 			ThreadState = ThreadState.Generate;
 			WaitDebugInfo();
@@ -118,22 +127,18 @@ public class ThreadGeneration : MonoBehaviour
 			var startGlobalTimeGeneration = DateTime.Now;
 
 			var startChunkDataGenerationTime = DateTime.Now;
-			GenerateChunkData(); // Generate ChunkData if doesnt exist
+			GenerateChunkData(playerKeyPositionTmp); // Generate ChunkData if doesnt exist
 			ChunkDataGenerationTime = (int)(DateTime.Now.Subtract(startChunkDataGenerationTime).TotalSeconds * 100) / 100.0f;
 
-			var startMeshDataGenerationTime = DateTime.Now;
-			GenerateMeshData(); // Recalculate the MeshData if a modification as applied
-			MeshDataGenerationTime = (int)(DateTime.Now.Subtract(startMeshDataGenerationTime).TotalSeconds * 100) / 100.0f;
-
 			var startCreateOrDestroyChunkTime = DateTime.Now;
-			CheckChunkToCreateOrDestroy(); // Check what chunk has need to be create or destroy
+			CheckChunkToCreateOrDestroy(playerKeyPositionTmp); // Check what chunk has need to be create or destroy
 			CreateOrDestroyChunkTime = (int)(DateTime.Now.Subtract(startCreateOrDestroyChunkTime).TotalSeconds * 100) / 100.0f;
 
 			GlobalGenerationTime = (int)(DateTime.Now.Subtract(startGlobalTimeGeneration).TotalSeconds * 100) / 100.0f;
 
 			WaitDebugInfo();
 
-			resolveRequest = true; // Set true for resolving the generation in main thread
+			WaitResolveGeneration(); // Wait the main thread Resolving
 		}
 	}
 
@@ -155,12 +160,12 @@ public class ThreadGeneration : MonoBehaviour
 	}
 	void ResolveGenerationThread()
 	{
-		if (resolveRequest)
+		if (resolveGenerationRequest)
 		{
 			ResolveChunkToCreate();
 			ResolveChunkToDestroy();
 
-			resolveRequest = false;
+			resolveGenerationRequest = false;
 		}
 	}
 
@@ -188,7 +193,7 @@ public class ThreadGeneration : MonoBehaviour
 	{
 		keys = MathfPlus.GetAllPointInRadius(mapGenerator.ChunkViewRadius);
 
-		if (mapGenerator != null) StartThread();
+		StartThread();
 	}
 	private void Update()
 	{
@@ -199,6 +204,6 @@ public class ThreadGeneration : MonoBehaviour
 	private void OnApplicationQuit()
 	{
 		shutdownRequest = true;
-		generationThread.Join();
+		generationThread.Abort();
 	}
 }
