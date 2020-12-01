@@ -13,6 +13,8 @@ public class MapGenerator : MonoBehaviour
 	static MapGenerator instance = null;
 	public static TextureData TextureData { get => instance.textureData; }
 
+	public int NbChunk { get => nbChunk; }
+
 	// Ground HeightMap Parameters
 	[SerializeField] int seed = 0;
 	[SerializeField] int octaves = 4;
@@ -66,6 +68,37 @@ public class MapGenerator : MonoBehaviour
 
 	public HeightMap HeightMap { get; private set; } = null;
 	public HeightMap TreeHeightMap { get; private set; } = null;
+
+	public ChunkData GenerateChunkData(ChunkKey chunkKey)
+	{
+		ChunkData chunkData = new ChunkData();
+		chunkData.Position = new Vector3(chunkKey.x, 0.0f, chunkKey.y) * Chunk.ChunkSize;
+
+		for (int j = 0; j < Chunk.ChunkSize; j++)
+			for (int i = 0; i < Chunk.ChunkSize; i++)
+			{
+				bool checkTree = true;
+				for (int k = 0; k < Chunk.ChunkHeight; k++)
+				{
+					var blockPosition = new Vector3(i - Chunk.ChunkRadius, k, j - Chunk.ChunkRadius);
+					var height = HeightMap.GetHeight(chunkData.Position.x + blockPosition.x, chunkData.Position.z + blockPosition.z);
+					var groundHeight = height * groundHeightMax;
+					var blockType = (blockPosition.y > groundHeight) ? BlockType.Air : BlockType.Grass; // if block is below ground Height, create a block.
+
+					if (chunkData.Blocks[i, j, k].Type == BlockType.None) chunkData.SetBlock(i, j, k, blockType, blockPosition);
+
+					//Check block type if is the first Ground Layer
+					if (checkTree && blockType == BlockType.Air)
+					{
+						checkTree = false;
+
+						CreateTree(chunkData, i, j, k, blockPosition);
+					}
+				}
+			}
+
+		return chunkData;
+	}
 
 	void CreateTree(ChunkData chunkData, int i, int j, int k, Vector3 blockPosition)
 	{
@@ -249,24 +282,24 @@ public class MapGenerator : MonoBehaviour
 	}
 	private void Start()
 	{
-		StartLoadingChunkThread();
+		//StartLoadingChunkThread();
 	}
 	private void Update()
 	{
-		//OnChunkEnter
-		if (GetKeyFromWorldPosition(PlayerController.Position) != GetKeyFromWorldPosition(PlayerController.PreviousPosition))
-		{
-			StartLoadingChunkThread();
-		}
+		////OnChunkEnter
+		//if (GetKeyFromWorldPosition(PlayerController.Position) != GetKeyFromWorldPosition(PlayerController.PreviousPosition))
+		//{
+		//	StartLoadingChunkThread();
+		//}
 
-		if (updateDebugText)
-		{
-			UpdateDebugText();
-			updateDebugText = false;
-		}
+		//if (updateDebugText)
+		//{
+		//	UpdateDebugText();
+		//	updateDebugText = false;
+		//}
 
-		ProcessLoadChunk();
-
-		ProcessLog();
+		//ProcessLoadChunk();
+		//
+		//ProcessLog();
 	}
 }
