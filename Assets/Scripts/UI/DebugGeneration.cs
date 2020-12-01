@@ -9,9 +9,25 @@ public class DebugGeneration : MonoBehaviour
 
     [SerializeField] ThreadGeneration threadGeneration = null;
 
-    void UpdateText()
+	void UpdateText()
 	{
-        debugText.text = "Thread Generation\n" +
-            "   State : " + threadGeneration.ThreadState;
+		debugText.text = "Thread Generation\n" +
+			"	Chunk Loaded Count : " + threadGeneration.LoadedChunkCount + "\n" +
+			"	Chunk Instantiated Count : " + threadGeneration.InstantiatedChunkCount + "\n" +
+			"\n" +
+			"State : " + threadGeneration.ThreadState + "s\n" +
+			"	Global Time : " + threadGeneration.GlobalGenerationTime + "s\n" +
+			"	ChunkData Time : " + threadGeneration.ChunkDataGenerationTime + "s\n" +
+			"	MeshData Time : " + threadGeneration.MeshDataGenerationTime + "s\n" +
+			"	CreateOrDestroyChunk Time : " + threadGeneration.CreateOrDestroyChunkTime + "s\n";
+	}
+
+	private void Update()
+	{
+		if (threadGeneration.updateDebugInfo)
+		{
+			UpdateText();
+			threadGeneration.updateDebugInfo = false;
+		}
 	}
 }

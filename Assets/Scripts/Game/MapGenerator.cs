@@ -3,7 +3,6 @@ using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 using ChunkKey = UnityEngine.Vector2Int;
 using ChunkKeyData = System.Collections.Generic.KeyValuePair<UnityEngine.Vector2Int, ChunkData>;
@@ -38,37 +37,30 @@ public class MapGenerator : MonoBehaviour
 	[SerializeField] GameObject chunkPrefab = null;
 	[SerializeField] TextureData textureData = null;
 
-	//Debug Parameters
-	[SerializeField] Text debugText = null;
-	float globalTimeGeneration = 0.0f;
-	float globalMeshDataTimeGeneration = 0.0f;
-	float blockDataTimeGeneration = 0.0f;
-
-	readonly object logLock = new object();
-	Queue<string> logQueue = new Queue<string>();
-	void DebugLog(string log)
-	{
-		lock (logLock)
-		{
-			logQueue.Enqueue(log);
-		}
-	}
-	void ProcessLog()
-	{
-		if (Monitor.TryEnter(logLock))
-		{
-			for (int i = 0; i < logQueue.Count; i++)
-			{
-				Debug.Log(logQueue.Dequeue());
-			}
-
-			Monitor.Exit(logLock);
-		}
-	}
-
 	public HeightMap HeightMap { get; private set; } = null;
 	public HeightMap TreeHeightMap { get; private set; } = null;
 
+	void CreateTree(ChunkData chunkData, int i, int j, int k, Vector3 blockPosition)
+	{
+		var treeHeight = TreeHeightMap.GetHeight(chunkData.Position.x + blockPosition.x, chunkData.Position.z + blockPosition.z);
+		if (treeHeight > treeProbability)
+		{
+			// Create Leaves
+			for (int kk = 4; kk < 8; kk++)
+				for (int jj = -2; jj < 3; jj++)
+					for (int ii = -2; ii < 3; ii++)
+						if ((Mathf.Abs(ii) + Mathf.Abs(kk - 5) + Mathf.Abs(jj) < 5))
+							chunkData.SetBlock(i + ii, j + jj, k + kk, BlockType.Leaves, blockPosition + new Vector3(ii, kk, jj));
+
+			// Create Trunk
+			chunkData.SetBlock(i, j, k, BlockType.Wood, blockPosition);
+			chunkData.SetBlock(i, j, k + 1, BlockType.Wood, blockPosition + new Vector3(0.0f, 1.0f, 0.0f));
+			chunkData.SetBlock(i, j, k + 2, BlockType.Wood, blockPosition + new Vector3(0.0f, 2.0f, 0.0f));
+			chunkData.SetBlock(i, j, k + 3, BlockType.Wood, blockPosition + new Vector3(0.0f, 3.0f, 0.0f));
+			chunkData.SetBlock(i, j, k + 4, BlockType.Wood, blockPosition + new Vector3(0.0f, 4.0f, 0.0f));
+			chunkData.SetBlock(i, j, k + 5, BlockType.Wood, blockPosition + new Vector3(0.0f, 5.0f, 0.0f));
+		}
+	}
 	public ChunkData GenerateChunkData(ChunkKey chunkKey)
 	{
 		ChunkData chunkData = new ChunkData();
@@ -100,27 +92,7 @@ public class MapGenerator : MonoBehaviour
 		return chunkData;
 	}
 
-	void CreateTree(ChunkData chunkData, int i, int j, int k, Vector3 blockPosition)
-	{
-		var treeHeight = TreeHeightMap.GetHeight(chunkData.Position.x + blockPosition.x, chunkData.Position.z + blockPosition.z);
-		if (treeHeight > treeProbability)
-		{
-			// Create Leaves
-			for (int kk = 4; kk < 8; kk++)
-				for (int jj = -2; jj < 3; jj++)
-					for (int ii = -2; ii < 3; ii++)
-						if ((Mathf.Abs(ii) + Mathf.Abs(kk - 5) + Mathf.Abs(jj) < 5))
-							chunkData.SetBlock(i + ii, j + jj, k + kk, BlockType.Leaves, blockPosition + new Vector3(ii, kk, jj));
 
-			// Create Trunk
-			chunkData.SetBlock(i, j, k, BlockType.Wood, blockPosition);
-			chunkData.SetBlock(i, j, k + 1, BlockType.Wood, blockPosition + new Vector3(0.0f, 1.0f, 0.0f));
-			chunkData.SetBlock(i, j, k + 2, BlockType.Wood, blockPosition + new Vector3(0.0f, 2.0f, 0.0f));
-			chunkData.SetBlock(i, j, k + 3, BlockType.Wood, blockPosition + new Vector3(0.0f, 3.0f, 0.0f));
-			chunkData.SetBlock(i, j, k + 4, BlockType.Wood, blockPosition + new Vector3(0.0f, 4.0f, 0.0f));
-			chunkData.SetBlock(i, j, k + 5, BlockType.Wood, blockPosition + new Vector3(0.0f, 5.0f, 0.0f));
-		}
-	}
 	ChunkData CreateChunkData(ChunkKey chunkKey)
 	{
 		ChunkData chunkData = new ChunkData();
@@ -152,9 +124,7 @@ public class MapGenerator : MonoBehaviour
 				}
 			}
 
-		var startMeshDataTimeGeneration = DateTime.Now;
 		chunkData.CalculateMeshData();
-		globalMeshDataTimeGeneration += (float)DateTime.Now.Subtract(startMeshDataTimeGeneration).TotalSeconds;
 
 		return chunkData;
 	}
@@ -166,16 +136,7 @@ public class MapGenerator : MonoBehaviour
 		chunkData.ChunkParent = chunk;
 	}
 
-	volatile bool updateDebugText = false;
-	void UpdateDebugText()
-	{
-		debugText.text = 
-			"Chunk Generation\n" +
-			"	Global Time : " + ((int)(globalTimeGeneration * 100)) / 100.0f + "s\n" +
-			"	Global MeshData : " + ((int)(globalMeshDataTimeGeneration * 100)) / 100.0f + "s\n";
-	}
-
-	#region Threading Chunk Loading
+	#region Threading Chunk Loading Old System
 	readonly object loadingLock = new object();
 	Dictionary<ChunkKey, ChunkData> loadedChunkDic = new Dictionary<ChunkKey, ChunkData>();
 	Queue<ChunkKeyData> loadingChunkQueue = new Queue<ChunkKeyData>();
@@ -195,7 +156,6 @@ public class MapGenerator : MonoBehaviour
 
 		lock (loadingLock)
 		{
-			globalMeshDataTimeGeneration = 0.0f;
 			var startGlobalTimeGeneration = DateTime.Now;
 			foreach (var key in keys)
 			{
@@ -206,9 +166,6 @@ public class MapGenerator : MonoBehaviour
 					loadingChunkQueue.Enqueue(new ChunkKeyData(chunkKey, chunkData));
 				}
 			}
-			globalTimeGeneration = (float)DateTime.Now.Subtract(startGlobalTimeGeneration).TotalSeconds;
-
-			updateDebugText = true;
 
 			foreach (var loadedChunk in loadedChunkDic)
 			{
@@ -279,27 +236,5 @@ public class MapGenerator : MonoBehaviour
 
 		HeightMap = new HeightMap(seed, octaves, lacunarity, persistance, scale);
 		TreeHeightMap = new HeightMap(seedTree, octavesTree, lacunarityTree, persistanceTree, scaleTree);
-	}
-	private void Start()
-	{
-		//StartLoadingChunkThread();
-	}
-	private void Update()
-	{
-		////OnChunkEnter
-		//if (GetKeyFromWorldPosition(PlayerController.Position) != GetKeyFromWorldPosition(PlayerController.PreviousPosition))
-		//{
-		//	StartLoadingChunkThread();
-		//}
-
-		//if (updateDebugText)
-		//{
-		//	UpdateDebugText();
-		//	updateDebugText = false;
-		//}
-
-		//ProcessLoadChunk();
-		//
-		//ProcessLog();
 	}
 }

@@ -67,6 +67,8 @@ public class ChunkData
 
 						if (Blocks[i, j, k].Type == BlockType.Grass) break;
 					}
+
+		isModified = false;
 	}
 	public Mesh CreateMesh()
 	{

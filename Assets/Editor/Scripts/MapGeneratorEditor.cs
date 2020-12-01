@@ -33,9 +33,6 @@ public class MapGeneratorEditor : Editor
 	SerializedProperty chunkPrefabProperty = null;
 	SerializedProperty textureDataProperty = null;
 
-	// Debug Parameters
-	SerializedProperty debugTextProperty = null;
-
 	Texture2D groundHeightMapPreview = null;
 	Texture2D treeHeightMapPreview = null;
 
@@ -124,9 +121,6 @@ public class MapGeneratorEditor : Editor
 		chunkPrefabProperty = serializedObject.FindProperty("chunkPrefab");
 		textureDataProperty = serializedObject.FindProperty("textureData");
 
-		// Debug Parameters
-		debugTextProperty = serializedObject.FindProperty("debugText");
-
 		GenerateGroundTexture();
 		GenerateTreeTexture();
 	}
@@ -172,11 +166,6 @@ public class MapGeneratorEditor : Editor
 		EditorGUILayout.PropertyField(nbChunkProperty);
 		EditorGUILayout.PropertyField(chunkPrefabProperty);
 		EditorGUILayout.PropertyField(textureDataProperty);
-
-		// Debug Parameters
-		EditorGUILayout.Space();
-		EditorGUILayout.LabelField(new GUIContent("Debug"), titleStyle);
-		EditorGUILayout.PropertyField(debugTextProperty);
 
 		serializedObject.ApplyModifiedProperties();
 	}

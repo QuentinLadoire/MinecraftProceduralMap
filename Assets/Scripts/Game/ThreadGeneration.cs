@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,7 +26,14 @@ public class ThreadGeneration : MonoBehaviour
 	volatile bool generationRequest = true;
 	volatile bool resolveRequest = false;
 
+	public volatile bool updateDebugInfo = false;
 	public ThreadState ThreadState { get; private set; } = ThreadState.None;
+	public int LoadedChunkCount { get => chunkDataDico.Count; }
+	public int InstantiatedChunkCount { get => chunkCreated.Count; }
+	public float GlobalGenerationTime { get; private set; } = 0.0f;
+	public float ChunkDataGenerationTime { get; private set; } = 0.0f;
+	public float MeshDataGenerationTime { get; private set; } = 0.0f;
+	public float CreateOrDestroyChunkTime { get; private set; } = 0.0f;
 
 	ChunkKey[] keys = null;
 	ChunkKey playerKeyPosition = ChunkKey.zero;
@@ -48,6 +56,12 @@ public class ThreadGeneration : MonoBehaviour
 		chunkData.ChunkParent = chunk;
 
 		chunkCreated.Add(chunkData);
+	}
+
+	void WaitDebugInfo()
+	{
+		updateDebugInfo = true;
+		while (updateDebugInfo) ;
 	}
 
 	void GenerateChunkData()
@@ -93,17 +107,31 @@ public class ThreadGeneration : MonoBehaviour
 		while (!shutdownRequest)
 		{
 			ThreadState = ThreadState.Waiting;
+			WaitDebugInfo();
 
-			while (!generationRequest || resolveRequest) ; // Wait if no generation request or if resolving generation is in process
+			while (!generationRequest || resolveRequest) if (shutdownRequest) return; // Wait if no generation request or if resolving generation is in process
 			generationRequest = false; // reset the generation request
 
 			ThreadState = ThreadState.Generate;
+			WaitDebugInfo();
 
+			var startGlobalTimeGeneration = DateTime.Now;
+
+			var startChunkDataGenerationTime = DateTime.Now;
 			GenerateChunkData(); // Generate ChunkData if doesnt exist
+			ChunkDataGenerationTime = (int)(DateTime.Now.Subtract(startChunkDataGenerationTime).TotalSeconds * 100) / 100.0f;
 
+			var startMeshDataGenerationTime = DateTime.Now;
 			GenerateMeshData(); // Recalculate the MeshData if a modification as applied
+			MeshDataGenerationTime = (int)(DateTime.Now.Subtract(startMeshDataGenerationTime).TotalSeconds * 100) / 100.0f;
 
+			var startCreateOrDestroyChunkTime = DateTime.Now;
 			CheckChunkToCreateOrDestroy(); // Check what chunk has need to be create or destroy
+			CreateOrDestroyChunkTime = (int)(DateTime.Now.Subtract(startCreateOrDestroyChunkTime).TotalSeconds * 100) / 100.0f;
+
+			GlobalGenerationTime = (int)(DateTime.Now.Subtract(startGlobalTimeGeneration).TotalSeconds * 100) / 100.0f;
+
+			WaitDebugInfo();
 
 			resolveRequest = true; // Set true for resolving the generation in main thread
 		}
@@ -167,5 +195,10 @@ public class ThreadGeneration : MonoBehaviour
 		ChunkGenerationIsTrigger();
 
 		ResolveGenerationThread();
+	}
+	private void OnApplicationQuit()
+	{
+		shutdownRequest = true;
+		generationThread.Join();
 	}
 }
