@@ -34,9 +34,6 @@ public class PlayerController : MonoBehaviour
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
 
-		QualitySettings.vSyncCount = 0;
-		Application.targetFrameRate = 60;
-
 		previousPosition = transform.position;
 	}
 	private void Update()

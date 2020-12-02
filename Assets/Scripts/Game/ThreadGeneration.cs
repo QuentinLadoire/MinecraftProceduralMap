@@ -32,6 +32,7 @@ public class ThreadGeneration : MonoBehaviour
 	public int InstantiatedChunkCount { get => chunkCreated.Count; }
 	public float GlobalGenerationTime { get; private set; } = 0.0f;
 	public float ChunkDataGenerationTime { get; private set; } = 0.0f;
+	public float MeshDataGenerationTime { get; private set; } = 0.0f;
 	public float CreateOrDestroyChunkTime { get; private set; } = 0.0f;
 
 	ChunkKey[] keys = null;
@@ -106,6 +107,11 @@ public class ThreadGeneration : MonoBehaviour
 			}
 		}
 	}
+	void GenerateMeshData()
+	{
+		foreach (var chunkData in chunkDataDico)
+			chunkData.Value.CalculateMeshData();
+	}
 	void GenerationThread()
 	{
 		bool firstFrame = true;
@@ -129,6 +135,10 @@ public class ThreadGeneration : MonoBehaviour
 			var startChunkDataGenerationTime = DateTime.Now;
 			GenerateChunkData(playerKeyPositionTmp); // Generate ChunkData if doesnt exist
 			ChunkDataGenerationTime = (int)(DateTime.Now.Subtract(startChunkDataGenerationTime).TotalSeconds * 100) / 100.0f;
+
+			var startMeshDataGenerationTime = DateTime.Now;
+			GenerateMeshData();
+			MeshDataGenerationTime = (int)(DateTime.Now.Subtract(startMeshDataGenerationTime).TotalSeconds * 100) / 100.0f;
 
 			var startCreateOrDestroyChunkTime = DateTime.Now;
 			CheckChunkToCreateOrDestroy(playerKeyPositionTmp); // Check what chunk has need to be create or destroy
