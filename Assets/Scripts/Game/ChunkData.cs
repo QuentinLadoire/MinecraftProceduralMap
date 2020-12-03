@@ -52,6 +52,45 @@ public class ChunkData
 		isModified = true;
 	}
 
+	bool CheckBlock(int i, int j, int k)
+	{
+		if (!(i < Chunk.ChunkSize)) return false;
+		if (!(j < Chunk.ChunkSize)) return false;
+		if (!(k < Chunk.ChunkHeight)) return false;
+		if (!(i >= 0)) return false;
+		if (!(j >= 0)) return false;
+		if (!(k >= 0)) return false;
+
+		if (Blocks[i, j, k].Type == BlockType.Air)
+			return true;
+
+		return false;
+	}
+	bool CheckUp(int i, int j, int k)
+	{
+		return CheckBlock(i, j, k + 1);
+	}
+	bool CheckDown(int i, int j, int k)
+	{
+		return CheckBlock(i, j, k - 1);
+	}
+	bool CheckRight(int i, int j, int k)
+	{
+		return CheckBlock(i + 1, j, k);
+	}
+	bool CheckLeft(int i, int j, int k)
+	{
+		return CheckBlock(i - 1, j, k);
+	}
+	bool CheckFront(int i, int j, int k)
+	{
+		return CheckBlock(i, j + 1, k);
+	}
+	bool CheckBack(int i, int j, int k)
+	{
+		return CheckBlock(i, j - 1, k);
+	}
+
 	public void CalculateMeshData()
 	{
 		if (!isModified) return;
@@ -61,12 +100,28 @@ public class ChunkData
 		for (int j = 0; j < Chunk.ChunkSize; j++)
 			for (int i = 0; i < Chunk.ChunkSize; i++)
 				for (int k = Chunk.ChunkHeight - 1; k >= 0; k--)
-					if (Blocks[i, j, k].Type != BlockType.Air) // Add the first block of the ground at column(i, j)
+				{
+					if (Blocks[i, j, k].Type != BlockType.Air)
 					{
-						meshData += Blocks[i, j, k].CreateMeshData();
-
-						if (Blocks[i, j, k].Type == BlockType.Grass) break;
+						if (!Blocks[i, j, k].IsTransparent)
+						{
+							if (CheckUp(i, j, k))
+								meshData += Blocks[i, j, k].CreateMeshUp();
+							if (CheckDown(i, j, k))
+								meshData += Blocks[i, j, k].CreateMeshDown();
+							if (CheckRight(i, j, k))
+								meshData += Blocks[i, j, k].CreateMeshRight();
+							if (CheckLeft(i, j, k))
+								meshData += Blocks[i, j, k].CreateMeshLeft();
+							if (CheckFront(i, j, k))
+								meshData += Blocks[i, j, k].CreateMeshFront();
+							if (CheckBack(i, j, k))
+								meshData += Blocks[i, j, k].CreateMeshBack();
+						}
+						else
+							meshData += Blocks[i, j, k].CreateMeshAll();
 					}
+				}
 
 		isModified = false;
 	}
