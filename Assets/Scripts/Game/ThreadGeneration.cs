@@ -43,6 +43,14 @@ public class ThreadGeneration : MonoBehaviour
 	Queue<ChunkData> chunkToCreate = new Queue<ChunkData>();
 	Queue<ChunkData> chunkToDestroy = new Queue<ChunkData>();
 
+	public ChunkData GetChunkData(ChunkKey chunkKey)
+	{
+		if (chunkDataDico.ContainsKey(chunkKey))
+			return chunkDataDico[chunkKey];
+
+		return null;
+	}
+
 	void DestroyChunk(ChunkData chunkData)
 	{
 		chunkCreated.Remove(chunkData);
@@ -82,8 +90,8 @@ public class ThreadGeneration : MonoBehaviour
 			var chunkKey = playerKeyPosition + key;
 			if (!chunkDataDico.ContainsKey(chunkKey)) // check if the chunkdata already exist 
 			{
-				var chunkData = mapGenerator.GenerateChunkData(chunkKey);	// Generate and 
-				chunkDataDico.Add(chunkKey, chunkData);						// Add to dico
+				var chunkData = mapGenerator.GenerateChunkData(chunkKey);   // Generate and 
+				chunkDataDico.Add(chunkKey, chunkData);                     // Add to dico
 			}
 		}
 	}
@@ -187,16 +195,12 @@ public class ThreadGeneration : MonoBehaviour
 
 	void ChunkGenerationIsTrigger()
 	{
-		if (GetKeyFromWorldPosition(PlayerController.Position) != GetKeyFromWorldPosition(PlayerController.PreviousPosition))
+		if (World.GetKeyFromWorldPosition(PlayerController.Position) != World.GetKeyFromWorldPosition(PlayerController.PreviousPosition))
 		{
-			playerKeyPosition = GetKeyFromWorldPosition(PlayerController.Position);
+			playerKeyPosition = World.GetKeyFromWorldPosition(PlayerController.Position);
+
 			generationRequest = true;
 		}
-	}
-
-	ChunkKey GetKeyFromWorldPosition(Vector3 position)
-	{
-		return new ChunkKey(Mathf.RoundToInt(position.x / Chunk.ChunkSize), Mathf.RoundToInt(position.z / Chunk.ChunkSize));
 	}
 
 	private void Start()

@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using ChunkKey = UnityEngine.Vector2Int;
+
 public class ChunkData
 {
 	public Chunk ChunkParent { get; set; } = null;
@@ -54,14 +56,44 @@ public class ChunkData
 
 	bool CheckBlock(int i, int j, int k)
 	{
-		if (!(i < Chunk.ChunkSize)) return false;
-		if (!(j < Chunk.ChunkSize)) return false;
-		if (!(k < Chunk.ChunkHeight)) return false;
-		if (!(i >= 0)) return false;
-		if (!(j >= 0)) return false;
+		if (!(k < Chunk.ChunkHeight)) return true;
 		if (!(k >= 0)) return false;
 
-		if (Blocks[i, j, k].Type == BlockType.Air)
+		if (i >= Chunk.ChunkSize) // Check the block in the adjacent X + 1 chunk
+		{
+			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(Position + new Vector3(Chunk.ChunkSize, 0.0f, 0.0f)));
+			if (chunkData != null)
+				return chunkData.CheckBlock(0, j, k);
+
+			return false; // Return false if the chuck doesnt exist
+		}
+		if (j >= Chunk.ChunkSize) // Check the block in the adjacent Z + 1 chunk
+		{
+			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(Position + new Vector3(0.0f, 0.0f, Chunk.ChunkSize)));
+			if (chunkData != null)
+				return chunkData.CheckBlock(i, 0, k);
+
+			return false; // Return false if the chuck doesnt exist
+		}
+
+		if (i < 0) // Check the block in the adjacent X - 1 chunk
+		{
+			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(Position + new Vector3(-Chunk.ChunkSize, 0.0f, 0.0f)));
+			if (chunkData != null)
+				return chunkData.CheckBlock(Chunk.ChunkSize - 1, j, k);
+
+			return false; // Return false if the chuck doesnt exist
+		}
+		if (j < 0) // Check the block in the adjacent Z - 1 chunk
+		{
+			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(Position + new Vector3(0.0f, 0.0f, -Chunk.ChunkSize)));
+			if (chunkData != null)
+				return chunkData.CheckBlock(i, Chunk.ChunkSize - 1, k);
+
+			return false; // Return false if the chuck doesnt exist
+		}
+
+		if (Blocks[i, j, k].Type == BlockType.Air || Blocks[i, j, k].IsTransparent)
 			return true;
 
 		return false;
