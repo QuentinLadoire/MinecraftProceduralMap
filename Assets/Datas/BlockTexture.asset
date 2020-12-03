@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   textureTileSize: 16
   texture: {fileID: 2800000, guid: d7c7ad55bbc5da148a21be0d7b24a0c0, type: 3}
+  textureSize: {x: 48, y: 32}
   blocks:
   - BlockType: 1
     faceUp: {x: 0, y: 0}

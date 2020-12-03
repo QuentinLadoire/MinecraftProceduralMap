@@ -26,7 +26,7 @@ public class ThreadGeneration : MonoBehaviour
 	volatile bool generationRequest = true;
 	volatile bool resolveGenerationRequest = false;
 
-	public volatile bool updateDebugInfo = false;
+	[HideInInspector] public volatile bool updateDebugInfo = false;
 	public ThreadState ThreadState { get; private set; } = ThreadState.None;
 	public int LoadedChunkCount { get => chunkDataDico.Count; }
 	public int InstantiatedChunkCount { get => chunkCreated.Count; }

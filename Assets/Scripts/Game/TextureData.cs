@@ -38,7 +38,7 @@ public class TextureData : ScriptableObject
     [SerializeField] int textureTileSize = 16;
     [SerializeField] Texture2D texture = null;
 
-    Vector2 textureSize = Vector2.zero;
+    [HideInInspector][SerializeField] Vector2 textureSize = Vector2.zero;
 
     [SerializeField] List<BlockTexture> blocks = new List<BlockTexture>();
 

@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
 	//Camera rotation
 	Quaternion lerpMax = Quaternion.identity;
 	Quaternion lerpMin = Quaternion.identity;
-	float lerpValue = 0.0f;
+	float lerpValue = 0.5f;
 
 	Vector3 previousPosition = Vector3.zero;
 

@@ -30,7 +30,6 @@ public class MapGeneratorEditor : Editor
 
 	// Games Parameters
 	SerializedProperty nbChunkProperty = null;
-	SerializedProperty chunkPrefabProperty = null;
 	SerializedProperty textureDataProperty = null;
 
 	Texture2D groundHeightMapPreview = null;
@@ -118,7 +117,6 @@ public class MapGeneratorEditor : Editor
 
 		// Games Parameters
 		nbChunkProperty = serializedObject.FindProperty("nbChunk");
-		chunkPrefabProperty = serializedObject.FindProperty("chunkPrefab");
 		textureDataProperty = serializedObject.FindProperty("textureData");
 
 		GenerateGroundTexture();
@@ -164,7 +162,6 @@ public class MapGeneratorEditor : Editor
 		EditorGUILayout.Space();
 		EditorGUILayout.LabelField(new GUIContent("Game"), titleStyle);
 		EditorGUILayout.PropertyField(nbChunkProperty);
-		EditorGUILayout.PropertyField(chunkPrefabProperty);
 		EditorGUILayout.PropertyField(textureDataProperty);
 
 		serializedObject.ApplyModifiedProperties();
