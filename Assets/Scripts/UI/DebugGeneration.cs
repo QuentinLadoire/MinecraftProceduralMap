@@ -18,8 +18,7 @@ public class DebugGeneration : MonoBehaviour
 			"State : " + threadGeneration.ThreadState + "s\n" +
 			"	Global Time : " + threadGeneration.GlobalGenerationTime + "s\n" +
 			"	ChunkData Time : " + threadGeneration.ChunkDataGenerationTime + "s\n" +
-			"	MeshData Time : " + threadGeneration.MeshDataGenerationTime + "s\n" +
-			"	CreateOrDestroyChunk Time : " + threadGeneration.CreateOrDestroyChunkTime + "s\n";
+			"	MeshData Time : " + threadGeneration.MeshDataGenerationTime + "s\n";
 	}
 
 	private void Update()

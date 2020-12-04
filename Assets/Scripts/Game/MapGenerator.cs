@@ -38,7 +38,7 @@ public class MapGenerator : MonoBehaviour
 
 	void CreateTree(ChunkData chunkData, int i, int j, int k, Vector3 blockPosition)
 	{
-		var treeHeight = TreeHeightMap.GetHeight(chunkData.Position.x + blockPosition.x, chunkData.Position.z + blockPosition.z);
+		var treeHeight = TreeHeightMap.GetHeight(chunkData.WorldPosition.x + blockPosition.x, chunkData.WorldPosition.z + blockPosition.z);
 		if (treeHeight > treeProbability)
 		{
 			// Create Leaves
@@ -60,7 +60,7 @@ public class MapGenerator : MonoBehaviour
 	public ChunkData GenerateChunkData(ChunkKey chunkKey)
 	{
 		ChunkData chunkData = new ChunkData();
-		chunkData.Position = new Vector3(chunkKey.x, 0.0f, chunkKey.y) * Chunk.ChunkSize;
+		chunkData.WorldPosition = new Vector3(chunkKey.x, 0.0f, chunkKey.y) * Chunk.ChunkSize;
 
 		for (int j = 0; j < Chunk.ChunkSize; j++)
 			for (int i = 0; i < Chunk.ChunkSize; i++)
@@ -69,7 +69,7 @@ public class MapGenerator : MonoBehaviour
 				for (int k = 0; k < Chunk.ChunkHeight; k++)
 				{
 					var blockPosition = new Vector3(i - Chunk.ChunkRadius, k, j - Chunk.ChunkRadius);
-					var height = HeightMap.GetHeight(chunkData.Position.x + blockPosition.x, chunkData.Position.z + blockPosition.z);
+					var height = HeightMap.GetHeight(chunkData.WorldPosition.x + blockPosition.x, chunkData.WorldPosition.z + blockPosition.z);
 					var groundHeight = height * groundHeightMax;
 					var blockType = (blockPosition.y > groundHeight) ? BlockType.Air : BlockType.Grass; // if block is below ground Height, create a block.
 

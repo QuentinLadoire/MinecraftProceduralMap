@@ -33,8 +33,7 @@ public class ThreadGeneration : MonoBehaviour
 	public float GlobalGenerationTime { get; private set; } = 0.0f;
 	public float ChunkDataGenerationTime { get; private set; } = 0.0f;
 	public float MeshDataGenerationTime { get; private set; } = 0.0f;
-	public float CreateOrDestroyChunkTime { get; private set; } = 0.0f;
-
+	
 	ChunkKey[] keys = null;
 	ChunkKey playerKeyPosition = ChunkKey.zero;
 
@@ -59,7 +58,7 @@ public class ThreadGeneration : MonoBehaviour
 	void CreateChunk(ChunkData chunkData)
 	{
 		var chunk = Instantiate(chunkPrefab).GetComponent<Chunk>();
-		chunk.transform.position = chunkData.Position;
+		chunk.transform.position = chunkData.WorldPosition;
 		chunk.ChunkData = chunkData;
 		chunkData.ChunkParent = chunk;
 
@@ -95,6 +94,11 @@ public class ThreadGeneration : MonoBehaviour
 			}
 		}
 	}
+	void GenerateMeshData()
+	{
+		foreach (var chunkData in chunkDataDico)
+			chunkData.Value.CalculateMeshData();
+	}
 	void CheckChunkToCreateOrDestroy(ChunkKey playerKeyPosition)
 	{
 		// For all chunkData in the dico
@@ -114,11 +118,6 @@ public class ThreadGeneration : MonoBehaviour
 					chunkToDestroy.Enqueue(keyChunkDataValue.Value);	// and if true add the chundata to the queue for destroying the chunk
 			}
 		}
-	}
-	void GenerateMeshData()
-	{
-		foreach (var chunkData in chunkDataDico)
-			chunkData.Value.CalculateMeshData();
 	}
 	void GenerationThread()
 	{
@@ -148,9 +147,7 @@ public class ThreadGeneration : MonoBehaviour
 			GenerateMeshData();
 			MeshDataGenerationTime = (int)(DateTime.Now.Subtract(startMeshDataGenerationTime).TotalSeconds * 100) / 100.0f;
 
-			var startCreateOrDestroyChunkTime = DateTime.Now;
 			CheckChunkToCreateOrDestroy(playerKeyPositionTmp); // Check what chunk has need to be create or destroy
-			CreateOrDestroyChunkTime = (int)(DateTime.Now.Subtract(startCreateOrDestroyChunkTime).TotalSeconds * 100) / 100.0f;
 
 			GlobalGenerationTime = (int)(DateTime.Now.Subtract(startGlobalTimeGeneration).TotalSeconds * 100) / 100.0f;
 

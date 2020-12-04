@@ -9,7 +9,7 @@ public class ChunkData
 {
 	public Chunk ChunkParent { get; set; } = null;
 
-	public Vector3 Position { get; set; } = Vector3.zero;
+	public Vector3 WorldPosition { get; set; } = Vector3.zero;
 	public Block[,,] Blocks { get; set; } = null;
 
 	MeshData meshData = null;
@@ -39,7 +39,7 @@ public class ChunkData
 		if (!(i >= 0 && j >= 0 && k >= 0)) return;
 		if (!(i < Chunk.ChunkSize && j < Chunk.ChunkSize && k < Chunk.ChunkHeight)) return;
 
-		Blocks[i, j, k].Position = position;
+		Blocks[i, j, k].WorldPosition = position;
 
 		isModified = true;
 	}
@@ -49,7 +49,7 @@ public class ChunkData
 		if (!(i < Chunk.ChunkSize && j < Chunk.ChunkSize && k < Chunk.ChunkHeight)) return;
 
 		Blocks[i, j, k].Type = blockType;
-		Blocks[i, j, k].Position = position;
+		Blocks[i, j, k].WorldPosition = position;
 
 		isModified = true;
 	}
@@ -61,7 +61,7 @@ public class ChunkData
 
 		if (i >= Chunk.ChunkSize) // Check the block in the adjacent X + 1 chunk
 		{
-			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(Position + new Vector3(Chunk.ChunkSize, 0.0f, 0.0f)));
+			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(WorldPosition + new Vector3(Chunk.ChunkSize, 0.0f, 0.0f)));
 			if (chunkData != null)
 				return chunkData.CheckBlock(0, j, k);
 
@@ -69,7 +69,7 @@ public class ChunkData
 		}
 		if (j >= Chunk.ChunkSize) // Check the block in the adjacent Z + 1 chunk
 		{
-			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(Position + new Vector3(0.0f, 0.0f, Chunk.ChunkSize)));
+			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(WorldPosition + new Vector3(0.0f, 0.0f, Chunk.ChunkSize)));
 			if (chunkData != null)
 				return chunkData.CheckBlock(i, 0, k);
 
@@ -78,7 +78,7 @@ public class ChunkData
 
 		if (i < 0) // Check the block in the adjacent X - 1 chunk
 		{
-			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(Position + new Vector3(-Chunk.ChunkSize, 0.0f, 0.0f)));
+			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(WorldPosition + new Vector3(-Chunk.ChunkSize, 0.0f, 0.0f)));
 			if (chunkData != null)
 				return chunkData.CheckBlock(Chunk.ChunkSize - 1, j, k);
 
@@ -86,7 +86,7 @@ public class ChunkData
 		}
 		if (j < 0) // Check the block in the adjacent Z - 1 chunk
 		{
-			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(Position + new Vector3(0.0f, 0.0f, -Chunk.ChunkSize)));
+			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(WorldPosition + new Vector3(0.0f, 0.0f, -Chunk.ChunkSize)));
 			if (chunkData != null)
 				return chunkData.CheckBlock(i, Chunk.ChunkSize - 1, k);
 
