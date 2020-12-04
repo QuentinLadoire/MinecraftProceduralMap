@@ -29,7 +29,7 @@ public struct Block
 {
 	public static Block Default = new Block(Vector3.zero, BlockType.None, false);
 
-	public Vector3 WorldPosition { get; set; }
+	public Vector3 Position { get; set; }
 	public BlockType Type { get => type; set => SetType(value); }
 	public bool IsTransparent { get; private set; }
 
@@ -57,10 +57,10 @@ public struct Block
 		MeshData meshData = new MeshData();
 
 		//Face Up
-		meshData.AddVertex(WorldPosition + new Vector3(-0.5f, 0.5f, 0.5f));	// 0
-		meshData.AddVertex(WorldPosition + new Vector3(0.5f, 0.5f, 0.5f));	// 1
-		meshData.AddVertex(WorldPosition + new Vector3(-0.5f, 0.5f, -0.5f));	// 2
-		meshData.AddVertex(WorldPosition + new Vector3(0.5f, 0.5f, -0.5f));	// 3
+		meshData.AddVertex(Position + new Vector3(-0.5f, 0.5f, 0.5f));	// 0
+		meshData.AddVertex(Position + new Vector3(0.5f, 0.5f, 0.5f));	// 1
+		meshData.AddVertex(Position + new Vector3(-0.5f, 0.5f, -0.5f));	// 2
+		meshData.AddVertex(Position + new Vector3(0.5f, 0.5f, -0.5f));	// 3
 
 		meshData.AddTriangle(0, 1, 2);
 		meshData.AddTriangle(1, 3, 2);
@@ -78,10 +78,10 @@ public struct Block
 		MeshData meshData = new MeshData();
 
 		//Face Down
-		meshData.AddVertex(WorldPosition + new Vector3(-0.5f, -0.5f, 0.5f));	// 0
-		meshData.AddVertex(WorldPosition + new Vector3(0.5f, -0.5f, 0.5f));	// 1
-		meshData.AddVertex(WorldPosition + new Vector3(-0.5f, -0.5f, -0.5f));// 2
-		meshData.AddVertex(WorldPosition + new Vector3(0.5f, -0.5f, -0.5f));	// 3
+		meshData.AddVertex(Position + new Vector3(-0.5f, -0.5f, 0.5f));	// 0
+		meshData.AddVertex(Position + new Vector3(0.5f, -0.5f, 0.5f));	// 1
+		meshData.AddVertex(Position + new Vector3(-0.5f, -0.5f, -0.5f));// 2
+		meshData.AddVertex(Position + new Vector3(0.5f, -0.5f, -0.5f));	// 3
 
 		meshData.AddTriangle(0, 2, 1);
 		meshData.AddTriangle(1, 2, 3);
@@ -99,10 +99,10 @@ public struct Block
 		MeshData meshData = new MeshData();
 
 		//Face Right
-		meshData.AddVertex(WorldPosition + new Vector3(0.5f, 0.5f, -0.5f));	// 0
-		meshData.AddVertex(WorldPosition + new Vector3(0.5f, 0.5f, 0.5f));	// 1
-		meshData.AddVertex(WorldPosition + new Vector3(0.5f, -0.5f, -0.5f));	// 2
-		meshData.AddVertex(WorldPosition + new Vector3(0.5f, -0.5f, 0.5f));	// 3
+		meshData.AddVertex(Position + new Vector3(0.5f, 0.5f, -0.5f));	// 0
+		meshData.AddVertex(Position + new Vector3(0.5f, 0.5f, 0.5f));	// 1
+		meshData.AddVertex(Position + new Vector3(0.5f, -0.5f, -0.5f));	// 2
+		meshData.AddVertex(Position + new Vector3(0.5f, -0.5f, 0.5f));	// 3
 
 		meshData.AddTriangle(0, 1, 2);
 		meshData.AddTriangle(1, 3, 2);
@@ -120,10 +120,10 @@ public struct Block
 		MeshData meshData = new MeshData();
 
 		//Face Left
-		meshData.AddVertex(WorldPosition + new Vector3(-0.5f, 0.5f, 0.5f));	// 0
-		meshData.AddVertex(WorldPosition + new Vector3(-0.5f, 0.5f, -0.5f));	// 1
-		meshData.AddVertex(WorldPosition + new Vector3(-0.5f, -0.5f, 0.5f));	// 2
-		meshData.AddVertex(WorldPosition + new Vector3(-0.5f, -0.5f, -0.5f));// 3
+		meshData.AddVertex(Position + new Vector3(-0.5f, 0.5f, 0.5f));	// 0
+		meshData.AddVertex(Position + new Vector3(-0.5f, 0.5f, -0.5f));	// 1
+		meshData.AddVertex(Position + new Vector3(-0.5f, -0.5f, 0.5f));	// 2
+		meshData.AddVertex(Position + new Vector3(-0.5f, -0.5f, -0.5f));// 3
 
 		meshData.AddTriangle(0, 1, 2);
 		meshData.AddTriangle(1, 3, 2);
@@ -141,10 +141,10 @@ public struct Block
 		MeshData meshData = new MeshData();
 
 		//Face Front
-		meshData.AddVertex(WorldPosition + new Vector3(0.5f, 0.5f, 0.5f));	// 0
-		meshData.AddVertex(WorldPosition + new Vector3(-0.5f, 0.5f, 0.5f));	// 1
-		meshData.AddVertex(WorldPosition + new Vector3(0.5f, -0.5f, 0.5f));	// 2
-		meshData.AddVertex(WorldPosition + new Vector3(-0.5f, -0.5f, 0.5f)); // 3
+		meshData.AddVertex(Position + new Vector3(0.5f, 0.5f, 0.5f));	// 0
+		meshData.AddVertex(Position + new Vector3(-0.5f, 0.5f, 0.5f));	// 1
+		meshData.AddVertex(Position + new Vector3(0.5f, -0.5f, 0.5f));	// 2
+		meshData.AddVertex(Position + new Vector3(-0.5f, -0.5f, 0.5f)); // 3
 
 		meshData.AddTriangle(0, 1, 2);
 		meshData.AddTriangle(1, 3, 2);
@@ -162,10 +162,10 @@ public struct Block
 		MeshData meshData = new MeshData();
 
 		//Face Back
-		meshData.AddVertex(WorldPosition + new Vector3(-0.5f, 0.5f, -0.5f));	// 0
-		meshData.AddVertex(WorldPosition + new Vector3(0.5f, 0.5f, -0.5f));	// 1
-		meshData.AddVertex(WorldPosition + new Vector3(-0.5f, -0.5f, -0.5f));// 2
-		meshData.AddVertex(WorldPosition + new Vector3(0.5f, -0.5f, -0.5f));	// 3
+		meshData.AddVertex(Position + new Vector3(-0.5f, 0.5f, -0.5f));	// 0
+		meshData.AddVertex(Position + new Vector3(0.5f, 0.5f, -0.5f));	// 1
+		meshData.AddVertex(Position + new Vector3(-0.5f, -0.5f, -0.5f));// 2
+		meshData.AddVertex(Position + new Vector3(0.5f, -0.5f, -0.5f));	// 3
 
 		meshData.AddTriangle(0, 1, 2);
 		meshData.AddTriangle(1, 3, 2);
@@ -186,7 +186,7 @@ public struct Block
 	
 	public Block(Vector3 position, BlockType type, bool isSolid)
 	{
-		WorldPosition = position;
+		Position = position;
 		this.type = type;
 		IsTransparent = isSolid;
 	}

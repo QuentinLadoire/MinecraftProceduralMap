@@ -87,6 +87,19 @@ public class MapGenerator : MonoBehaviour
 
 		return chunkData;
 	}
+	public Block GenerateBlock(Vector3 worldPosition)
+	{
+		var height = HeightMap.GetHeight(worldPosition.x, worldPosition.z);
+		var groundHeight = height * groundHeightMax;
+		var blockType = (worldPosition.y > groundHeight) ? BlockType.Air : BlockType.Grass;
+
+		var block = Block.Default;
+		var chunkPosition = World.GetKeyFromWorldPosition(worldPosition) * Chunk.ChunkSize;
+		block.Position = new Vector3(worldPosition.x - chunkPosition.x, worldPosition.y, worldPosition.z - chunkPosition.y);
+		block.Type = blockType;
+
+		return block;
+	}
 
 	private void Awake()
 	{

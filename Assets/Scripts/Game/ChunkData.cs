@@ -39,7 +39,7 @@ public class ChunkData
 		if (!(i >= 0 && j >= 0 && k >= 0)) return;
 		if (!(i < Chunk.ChunkSize && j < Chunk.ChunkSize && k < Chunk.ChunkHeight)) return;
 
-		Blocks[i, j, k].WorldPosition = position;
+		Blocks[i, j, k].Position = position;
 
 		isModified = true;
 	}
@@ -49,7 +49,7 @@ public class ChunkData
 		if (!(i < Chunk.ChunkSize && j < Chunk.ChunkSize && k < Chunk.ChunkHeight)) return;
 
 		Blocks[i, j, k].Type = blockType;
-		Blocks[i, j, k].WorldPosition = position;
+		Blocks[i, j, k].Position = position;
 
 		isModified = true;
 	}
@@ -65,7 +65,8 @@ public class ChunkData
 			if (chunkData != null)
 				return chunkData.CheckBlock(0, j, k);
 
-			return false; // Return false if the chuck doesnt exist
+			var block = World.GetBlockAt(WorldPosition + new Vector3(i - Chunk.ChunkRadius, k, j - Chunk.ChunkRadius));
+			return block.Type == BlockType.Air || block.IsTransparent; 
 		}
 		if (j >= Chunk.ChunkSize) // Check the block in the adjacent Z + 1 chunk
 		{
@@ -73,7 +74,8 @@ public class ChunkData
 			if (chunkData != null)
 				return chunkData.CheckBlock(i, 0, k);
 
-			return false; // Return false if the chuck doesnt exist
+			var block = World.GetBlockAt(WorldPosition + new Vector3(i - Chunk.ChunkRadius, k, j - Chunk.ChunkRadius));
+			return block.Type == BlockType.Air || block.IsTransparent;
 		}
 
 		if (i < 0) // Check the block in the adjacent X - 1 chunk
@@ -82,7 +84,8 @@ public class ChunkData
 			if (chunkData != null)
 				return chunkData.CheckBlock(Chunk.ChunkSize - 1, j, k);
 
-			return false; // Return false if the chuck doesnt exist
+			var block = World.GetBlockAt(WorldPosition + new Vector3(i - Chunk.ChunkRadius, k, j - Chunk.ChunkRadius));
+			return block.Type == BlockType.Air || block.IsTransparent;
 		}
 		if (j < 0) // Check the block in the adjacent Z - 1 chunk
 		{
@@ -90,7 +93,8 @@ public class ChunkData
 			if (chunkData != null)
 				return chunkData.CheckBlock(i, Chunk.ChunkSize - 1, k);
 
-			return false; // Return false if the chuck doesnt exist
+			var block = World.GetBlockAt(WorldPosition + new Vector3(i - Chunk.ChunkRadius, k, j - Chunk.ChunkRadius));
+			return block.Type == BlockType.Air || block.IsTransparent;
 		}
 
 		if (Blocks[i, j, k].Type == BlockType.Air || Blocks[i, j, k].IsTransparent)

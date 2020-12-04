@@ -9,6 +9,7 @@ public class World : MonoBehaviour
 	static World instance = null;
 
 	[SerializeField] ThreadGeneration threadGeneration = null;
+	[SerializeField] MapGenerator mapGenerator = null;
 
 	public static ChunkKey GetKeyFromWorldPosition(Vector3 position)
 	{
@@ -18,6 +19,11 @@ public class World : MonoBehaviour
 	public static ChunkData GetChunkDataAt(ChunkKey chunkKey)
 	{
 		return instance.threadGeneration.GetChunkData(chunkKey);
+	}
+
+	public static Block GetBlockAt(Vector3 worldPosition)
+	{
+		return instance.mapGenerator.GenerateBlock(worldPosition);
 	}
 
 	private void Awake()

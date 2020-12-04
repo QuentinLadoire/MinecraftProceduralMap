@@ -942,6 +942,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 2782994795394980631, guid: 9aaf1595010dd1f488fb1d06ae482522, type: 3}
+      propertyPath: mapGenerator
+      value: 
+      objectReference: {fileID: 573669782195139335}
+    - target: {fileID: 2782994795394980631, guid: 9aaf1595010dd1f488fb1d06ae482522, type: 3}
       propertyPath: threadGeneration
       value: 
       objectReference: {fileID: 954775846}
