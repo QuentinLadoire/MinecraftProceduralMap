@@ -1,9 +1,6 @@
-﻿using System.Linq;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-using ChunkKey = UnityEngine.Vector2Int;
 
 public class ChunkData
 {
