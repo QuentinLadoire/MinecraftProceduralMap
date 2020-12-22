@@ -18,6 +18,14 @@ public class Chunk : MonoBehaviour
 	}
 	private void Start()
 	{
+		ChunkData = new ChunkData();
+		ChunkData.ChunkParent = this;
+		ChunkData.WorldPosition = transform.position;
+
+		ChunkData.GenerateGround();
+		ChunkData.GenerateTree();
+		ChunkData.CalculateMeshData();
+
 		meshFilter.mesh = ChunkData.CreateMesh();
 	}
 }

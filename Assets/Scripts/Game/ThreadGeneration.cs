@@ -204,7 +204,7 @@ public class ThreadGeneration : MonoBehaviour
 	{
 		keys = MathfPlus.GetAllPointInRadius(mapGenerator.ChunkViewRadius);
 
-		StartThread();
+		//StartThread();
 	}
 	private void Update()
 	{
@@ -215,6 +215,6 @@ public class ThreadGeneration : MonoBehaviour
 	private void OnApplicationQuit()
 	{
 		shutdownRequest = true;
-		generationThread.Abort();
+		if (generationThread != null) generationThread.Abort();
 	}
 }
