@@ -2,17 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-using ChunkKey = UnityEngine.Vector2Int;
-
 public class World : MonoBehaviour
 {
 	static World instance = null;
 
 	public static int ChunkView { get => instance.chunkView; }
 	public static TextureData TextureData { get => instance.textureData; }
-
-	[SerializeField] ThreadGeneration threadGeneration = null;
-	[SerializeField] MapGenerator mapGenerator = null;
+	public static MapGenerator MapGenerator { get => instance.mapGenerator; }
 
 	public static Vector2 Get2DPosition(Vector3 position)
 	{
@@ -20,27 +16,40 @@ public class World : MonoBehaviour
 	}
 	public static Vector2Int GetChunkPosition(Vector3 position)
 	{
-		return new Vector2Int(Mathf.RoundToInt(position.x / Chunk.ChunkSize), Mathf.RoundToInt(position.z / Chunk.ChunkSize));
-	}
-	public static ChunkKey GetKeyFromWorldPosition(Vector3 position)
-	{
-		return new ChunkKey(Mathf.RoundToInt(position.x / Chunk.ChunkSize), Mathf.RoundToInt(position.z / Chunk.ChunkSize));
+		return new Vector2Int(Mathf.RoundToInt(position.x / (Chunk.ChunkSize - 1)), Mathf.RoundToInt(position.z / (Chunk.ChunkSize - 1)));
 	}
 
-	public static ChunkData GetChunkDataAt(ChunkKey chunkKey)
+	public static Block GetBlock(Vector3 worldPosition)
 	{
-		return instance.threadGeneration.GetChunkData(chunkKey);
+		var chunk = instance.GetChunk(worldPosition);
+		if (chunk != null)
+			return chunk.GetBlockAt(worldPosition);
+
+		return Block.Default;
 	}
-	public static Block GetBlockAt(Vector3 worldPosition)
+	public static void SetBlock(Vector3 worldPosition, BlockType type)
 	{
-		return instance.mapGenerator.GenerateBlock(worldPosition);
+		var chunk = instance.GetChunk(worldPosition);
+		if (chunk != null)
+		{
+			chunk.SetBlockAt(worldPosition, type);
+			return;
+		}
+
+		//To Do : meta data 
 	}
 
+	[SerializeField] MapGenerator mapGenerator = null;
 	[SerializeField] GameObject chunkPrefab = null;
 	[SerializeField] TextureData textureData = null;
 	[SerializeField] int chunkView = 5;
 
 	List<Chunk> chunkList = new List<Chunk>();
+
+	Chunk GetChunk(Vector3 worldPosition)
+	{
+		return chunkList.Find(item => GetChunkPosition(item.transform.position) == GetChunkPosition(worldPosition));
+	}
 
 	void CreateChunk(Vector3 worldPosition)
 	{

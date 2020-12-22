@@ -192,9 +192,9 @@ public class ThreadGeneration : MonoBehaviour
 
 	void ChunkGenerationIsTrigger()
 	{
-		if (World.GetKeyFromWorldPosition(PlayerController.Position) != World.GetKeyFromWorldPosition(PlayerController.PreviousPosition))
+		if (World.GetChunkPosition(PlayerController.Position) != World.GetChunkPosition(PlayerController.PreviousPosition))
 		{
-			playerKeyPosition = World.GetKeyFromWorldPosition(PlayerController.Position);
+			playerKeyPosition = World.GetChunkPosition(PlayerController.Position);
 
 			generationRequest = true;
 		}

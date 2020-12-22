@@ -10,6 +10,19 @@ public class Chunk : MonoBehaviour
 
 	public ChunkData ChunkData { get; set; } = null;
 
+	public Block GetBlockAt(Vector3 worldPosition)
+	{
+		var blockPosition = worldPosition - ChunkData.WorldPosition;
+
+		return ChunkData.GetBlock((int)blockPosition.x, (int)blockPosition.y, (int)blockPosition.z);
+	}
+	public void SetBlockAt(Vector3 worldPosition, BlockType type)
+	{
+		var blockPosition = worldPosition - ChunkData.WorldPosition + new Vector3(ChunkRadius, 0.0f, ChunkRadius);
+
+		ChunkData.SetBlock((int)blockPosition.x, (int)blockPosition.y, (int)blockPosition.z, type);
+	}
+
 	MeshFilter meshFilter = null;
 	
 	IEnumerator ChunkDataGeneration()
@@ -20,11 +33,11 @@ public class Chunk : MonoBehaviour
 
 		ChunkData.GenerateTree();
 
-		yield return null;
+		yield return new WaitForFixedUpdate();
 
 		ChunkData.CalculateMeshData();
 
-		yield return null;
+		yield return new WaitForFixedUpdate();
 
 		meshFilter.mesh = ChunkData.CreateMesh();
 	}

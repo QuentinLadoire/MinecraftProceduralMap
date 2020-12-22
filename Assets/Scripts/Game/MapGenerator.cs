@@ -2,16 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-using ChunkKey = UnityEngine.Vector2Int;
-
 public class MapGenerator : MonoBehaviour
 {
-	static MapGenerator instance = null;
+	public HeightMap GroundHeightMap { get => heightMap; }
+	public int		 GroundHeightMax { get => groundHeightMax; }
 
-	public static HeightMap GroundHeightMap { get => instance.heightMap; }
-	public static HeightMap TreeHeightMap { get => instance.treeHeightMap; }
-	public static int GroundHeightMax { get => instance.groundHeightMax; }
-	public static float TreeProbability { get => instance.treeProbability; }
+	public HeightMap TreeHeightMap	 { get => treeHeightMap; }
+	public float	 TreeProbability { get => treeProbability; }
 
 	// Ground HeightMap Parameters
 	[SerializeField] int seed = 0;
@@ -34,7 +31,7 @@ public class MapGenerator : MonoBehaviour
 	HeightMap heightMap = null;
 	HeightMap treeHeightMap = null;
 
-	public ChunkData GenerateChunkData(ChunkKey chunkKey)
+	public ChunkData GenerateChunkData(Vector2Int chunkKey)
 	{
 		ChunkData chunkData = new ChunkData();
 		chunkData.WorldPosition = new Vector3(chunkKey.x, 0.0f, chunkKey.y) * Chunk.ChunkSize;
@@ -45,24 +42,15 @@ public class MapGenerator : MonoBehaviour
 
 		return chunkData;
 	}
-	public Block GenerateBlock(Vector3 worldPosition)
+	public BlockType GenerateBlockType(Vector3 worldPosition)
 	{
 		var height = heightMap.GetHeight(worldPosition.x, worldPosition.z);
 		var groundHeight = height * groundHeightMax;
-		var blockType = (worldPosition.y > groundHeight) ? BlockType.Air : BlockType.Grass;
-
-		var block = Block.Default;
-		var chunkPosition = World.GetKeyFromWorldPosition(worldPosition) * Chunk.ChunkSize;
-		block.Position = new Vector3(worldPosition.x - chunkPosition.x, worldPosition.y, worldPosition.z - chunkPosition.y);
-		block.Type = blockType;
-
-		return block;
+		return (worldPosition.y > groundHeight) ? BlockType.Air : BlockType.Grass;
 	}
 
 	private void Awake()
 	{
-		instance = this;
-
 		heightMap = new HeightMap(seed, octaves, lacunarity, persistance, scale);
 		treeHeightMap = new HeightMap(seedTree, octavesTree, lacunarityTree, persistanceTree, scaleTree);
 	}

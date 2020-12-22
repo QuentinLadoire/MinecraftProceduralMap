@@ -23,6 +23,8 @@ public class DebugGeneration : MonoBehaviour
 
 	private void Update()
 	{
+		if (threadGeneration == null) return;
+
 		if (threadGeneration.updateDebugInfo)
 		{
 			UpdateText();

@@ -27,31 +27,28 @@ public class ChunkData
 
 	public void SetBlock(int i, int j, int k, BlockType blockType)
 	{
-		if (!(i >= 0 && j >= 0 && k >= 0)) return;
-		if (!(i < Chunk.ChunkSize && j < Chunk.ChunkHeight && k < Chunk.ChunkSize)) return;
+		if (j < 0 || j >= Chunk.ChunkHeight) return;
 
-		blocks[i, j, k].Type = blockType;
+		if (i < 0 || k < 0 || i >= Chunk.ChunkSize ||  k >= Chunk.ChunkSize)
+		{
+			//World.SetBlock(WorldPosition + new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius), blockType);
 
-		isModified = true;
-	}
-	public void SetBlock(int i, int j, int k, Vector3 position)
-	{
-		if (!(i >= 0 && j >= 0 && k >= 0)) return;
-		if (!(i < Chunk.ChunkSize && j < Chunk.ChunkHeight && k < Chunk.ChunkSize)) return;
+			return;
+		}
 
-		blocks[i, j, k].Position = position;
+		if (blocks[i, j, k].Type == BlockType.Air || blocks[i, j, k].IsTransparent)
+			blocks[i, j, k].Type = blockType;
 
 		isModified = true;
 	}
-	public void SetBlock(int i, int j, int k, BlockType blockType, Vector3 position)
+	public Block GetBlock(int i, int j, int k)
 	{
-		if (!(i >= 0 && j >= 0 && k >= 0)) return;
-		if (!(i < Chunk.ChunkSize && j < Chunk.ChunkHeight && k < Chunk.ChunkSize)) return;
+		if (i < Chunk.ChunkSize && i >= 0 &&
+			j < Chunk.ChunkHeight && j >= 0 &&
+			k < Chunk.ChunkSize && k >= 0)
+			return blocks[i, j, k];
 
-		blocks[i, j, k].Type = blockType;
-		blocks[i, j, k].Position = position;
-
-		isModified = true;
+		return Block.Default;
 	}
 
 	bool CheckBlock(int i, int j, int k)
@@ -61,40 +58,24 @@ public class ChunkData
 
 		if (i >= Chunk.ChunkSize) // Check the block in the adjacent X + 1 chunk
 		{
-			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(WorldPosition + new Vector3(Chunk.ChunkSize, 0.0f, 0.0f)));
-			if (chunkData != null)
-				return chunkData.CheckBlock(0, j, k);
-
-			var block = World.GetBlockAt(WorldPosition + new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius));
-			return block.Type == BlockType.Air || block.IsTransparent;
+			var blockType = World.MapGenerator.GenerateBlockType(WorldPosition + new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius));
+			return blockType == BlockType.Air;
 		}
 		if (k >= Chunk.ChunkSize) // Check the block in the adjacent Z + 1 chunk
 		{
-			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(WorldPosition + new Vector3(0.0f, 0.0f, Chunk.ChunkSize)));
-			if (chunkData != null)
-				return chunkData.CheckBlock(i, j, 0);
-
-			var block = World.GetBlockAt(WorldPosition + new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius));
-			return block.Type == BlockType.Air || block.IsTransparent;
+			var blockType = World.MapGenerator.GenerateBlockType(WorldPosition + new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius));
+			return blockType == BlockType.Air;
 		}
 
 		if (i < 0) // Check the block in the adjacent X - 1 chunk
 		{
-			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(WorldPosition + new Vector3(-Chunk.ChunkSize, 0.0f, 0.0f)));
-			if (chunkData != null)
-				return chunkData.CheckBlock(Chunk.ChunkSize - 1, j, k);
-
-			var block = World.GetBlockAt(WorldPosition + new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius));
-			return block.Type == BlockType.Air || block.IsTransparent;
+			var blockType = World.MapGenerator.GenerateBlockType(WorldPosition + new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius));
+			return blockType == BlockType.Air;
 		}
 		if (k < 0) // Check the block in the adjacent Z - 1 chunk
 		{
-			var chunkData = World.GetChunkDataAt(World.GetKeyFromWorldPosition(WorldPosition + new Vector3(0.0f, 0.0f, -Chunk.ChunkSize)));
-			if (chunkData != null)
-				return chunkData.CheckBlock(i, j, Chunk.ChunkSize - 1);
-
-			var block = World.GetBlockAt(WorldPosition + new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius));
-			return block.Type == BlockType.Air || block.IsTransparent;
+			var blockType = World.MapGenerator.GenerateBlockType(WorldPosition + new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius));
+			return blockType == BlockType.Air;
 		}
 
 		if (blocks[i, j, k].Type == BlockType.Air || blocks[i, j, k].IsTransparent)
@@ -152,11 +133,10 @@ public class ChunkData
 				for (int k = 0; k < Chunk.ChunkSize; k++)
 				{
 					var blockPosition = new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius);
-					var height = MapGenerator.GroundHeightMap.GetHeight(WorldPosition.x + blockPosition.x, WorldPosition.z + blockPosition.z);
-					var groundHeight = height * MapGenerator.GroundHeightMax;
-					var blockType = (blockPosition.y > groundHeight) ? BlockType.Air : BlockType.Grass; // if block is below ground Height, create a block.
-
-					SetBlock(i, j, k, blockType);
+					var height = World.MapGenerator.GroundHeightMap.GetHeight(WorldPosition.x + blockPosition.x, WorldPosition.z + blockPosition.z);
+					var groundHeight = height * World.MapGenerator.GroundHeightMax;
+					if (blockPosition.y < groundHeight)
+						SetBlock(i, j, k, BlockType.Grass); // if block is below ground Height, create a block.
 				}
 			}
 	}
@@ -170,9 +150,9 @@ public class ChunkData
 					if (blocks[i, j, k].Type == BlockType.Grass)
 					{
 						var blockPosition = new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius);
-						var treeHeight = MapGenerator.TreeHeightMap.GetHeight(WorldPosition.x + blockPosition.x, WorldPosition.z + blockPosition.z);
+						var treeHeight = World.MapGenerator.TreeHeightMap.GetHeight(WorldPosition.x + blockPosition.x, WorldPosition.z + blockPosition.z);
 
-						if (treeHeight > MapGenerator.TreeProbability)
+						if (treeHeight > World.MapGenerator.TreeProbability)
 							CreateTree(i, j + 1, k);
 
 						break;
