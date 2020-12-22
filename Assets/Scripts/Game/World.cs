@@ -8,6 +8,9 @@ public class World : MonoBehaviour
 {
 	static World instance = null;
 
+	public static int ChunkView { get => instance.chunkView; }
+	public static TextureData TextureData { get => instance.textureData; }
+
 	[SerializeField] ThreadGeneration threadGeneration = null;
 	[SerializeField] MapGenerator mapGenerator = null;
 
@@ -34,6 +37,7 @@ public class World : MonoBehaviour
 	}
 
 	[SerializeField] GameObject chunkPrefab = null;
+	[SerializeField] TextureData textureData = null;
 	[SerializeField] int chunkView = 5;
 
 	List<Chunk> chunkList = new List<Chunk>();
@@ -108,7 +112,7 @@ public class World : MonoBehaviour
 	}
 	private void Update()
 	{
-		if (GetChunkPosition(PlayerController.Position) != GetChunkPosition(PlayerController.PreviousPosition))
-			UpdateChunk();
+		//if (GetChunkPosition(PlayerController.Position) != GetChunkPosition(PlayerController.PreviousPosition))
+		//	UpdateChunk();
 	}
 }

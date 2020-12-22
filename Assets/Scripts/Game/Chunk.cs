@@ -11,6 +11,23 @@ public class Chunk : MonoBehaviour
 	public ChunkData ChunkData { get; set; } = null;
 
 	MeshFilter meshFilter = null;
+	
+	IEnumerator ChunkDataGeneration()
+	{
+		ChunkData.GenerateGround();
+
+		yield return new WaitForFixedUpdate();
+
+		ChunkData.GenerateTree();
+
+		yield return null;
+
+		ChunkData.CalculateMeshData();
+
+		yield return null;
+
+		meshFilter.mesh = ChunkData.CreateMesh();
+	}
 
 	private void Awake()
 	{
@@ -22,10 +39,6 @@ public class Chunk : MonoBehaviour
 		ChunkData.ChunkParent = this;
 		ChunkData.WorldPosition = transform.position;
 
-		ChunkData.GenerateGround();
-		ChunkData.GenerateTree();
-		ChunkData.CalculateMeshData();
-
-		meshFilter.mesh = ChunkData.CreateMesh();
+		StartCoroutine(ChunkDataGeneration());
 	}
 }

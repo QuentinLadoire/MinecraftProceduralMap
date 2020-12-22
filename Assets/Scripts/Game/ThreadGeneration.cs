@@ -105,7 +105,7 @@ public class ThreadGeneration : MonoBehaviour
 		foreach (var keyChunkDataValue in chunkDataDico)
 		{
 			var chunkSqrDistance = (keyChunkDataValue.Key - playerKeyPosition).sqrMagnitude;
-			if (chunkSqrDistance <= mapGenerator.ChunkViewRadius * mapGenerator.ChunkViewRadius) // Check if the distance with the player is less or equal as the chunkViewRadius
+			if (chunkSqrDistance <= World.ChunkView * World.ChunkView) // Check if the distance with the player is less or equal as the chunkViewRadius
 			{
 				// if the condition is true, check if the chunk as need to be created 
 				if (!chunkCreated.Contains(keyChunkDataValue.Value))	// check if is not already created
@@ -202,7 +202,7 @@ public class ThreadGeneration : MonoBehaviour
 
 	private void Start()
 	{
-		keys = MathfPlus.GetAllPointInRadius(mapGenerator.ChunkViewRadius);
+		keys = MathfPlus.GetAllPointInRadius(World.ChunkView);
 
 		//StartThread();
 	}

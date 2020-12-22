@@ -28,10 +28,6 @@ public class MapGeneratorEditor : Editor
 
 	SerializedProperty treeProbabilityProperty = null;
 
-	// Games Parameters
-	SerializedProperty nbChunkProperty = null;
-	SerializedProperty textureDataProperty = null;
-
 	Texture2D groundHeightMapPreview = null;
 	Texture2D treeHeightMapPreview = null;
 
@@ -43,11 +39,11 @@ public class MapGeneratorEditor : Editor
 
 		HeightMap groundHeighMap = new HeightMap(seedProperty.intValue, octavesProperty.intValue, lacunarityProperty.floatValue, persistanceProperty.floatValue, scaleProperty.vector2Value);
 
-		var nbXPixel = groundHeightMapPreview.width / (Chunk.ChunkSize * nbChunkProperty.intValue);
-		var nbYPixel = groundHeightMapPreview.height / (Chunk.ChunkSize * nbChunkProperty.intValue);
+		var nbXPixel = groundHeightMapPreview.width / (Chunk.ChunkSize * 5);
+		var nbYPixel = groundHeightMapPreview.height / (Chunk.ChunkSize * 5);
 
-		for (int j = 0; j < Chunk.ChunkSize * nbChunkProperty.intValue; j++)
-			for (int i = 0; i < Chunk.ChunkSize * nbChunkProperty.intValue; i++)
+		for (int j = 0; j < Chunk.ChunkSize * 5; j++)
+			for (int i = 0; i < Chunk.ChunkSize * 5; i++)
 			{
 				var height = groundHeighMap.GetHeight(i - Chunk.ChunkRadius, j - Chunk.ChunkRadius);
 				var color = Color.Lerp(Color.black, Color.white, height);
@@ -66,11 +62,11 @@ public class MapGeneratorEditor : Editor
 
 		HeightMap treeHeighMap = new HeightMap(seedTreeProperty.intValue, octavesTreeProperty.intValue, lacunarityTreeProperty.floatValue, persistanceTreeProperty.floatValue, scaleTreeProperty.vector2Value);
 
-		var nbXPixel = treeHeightMapPreview.width / (Chunk.ChunkSize * nbChunkProperty.intValue);
-		var nbYPixel = treeHeightMapPreview.height / (Chunk.ChunkSize * nbChunkProperty.intValue);
+		var nbXPixel = treeHeightMapPreview.width / (Chunk.ChunkSize * 5);
+		var nbYPixel = treeHeightMapPreview.height / (Chunk.ChunkSize * 5);
 
-		for (int j = 0; j < Chunk.ChunkSize * nbChunkProperty.intValue; j++)
-			for (int i = 0; i < Chunk.ChunkSize * nbChunkProperty.intValue; i++)
+		for (int j = 0; j < Chunk.ChunkSize * 5; j++)
+			for (int i = 0; i < Chunk.ChunkSize * 5; i++)
 			{
 				var height = treeHeighMap.GetHeight(i - Chunk.ChunkRadius, j - Chunk.ChunkRadius);
 				var color = (height < treeProbabilityProperty.floatValue) ? Color.Lerp(Color.black, Color.white, height) : Color.green;
@@ -115,10 +111,6 @@ public class MapGeneratorEditor : Editor
 
 		treeProbabilityProperty = serializedObject.FindProperty("treeProbability");
 
-		// Games Parameters
-		nbChunkProperty = serializedObject.FindProperty("nbChunk");
-		textureDataProperty = serializedObject.FindProperty("textureData");
-
 		GenerateGroundTexture();
 		GenerateTreeTexture();
 	}
@@ -157,12 +149,6 @@ public class MapGeneratorEditor : Editor
 
 		GUILayout.Box(treeHeightMapPreview);
 		if (GUILayout.Button(new GUIContent("Generate Tree"))) GenerateTreeTexture();
-
-		// Games Parameters
-		EditorGUILayout.Space();
-		EditorGUILayout.LabelField(new GUIContent("Game"), titleStyle);
-		EditorGUILayout.PropertyField(nbChunkProperty);
-		EditorGUILayout.PropertyField(textureDataProperty);
 
 		serializedObject.ApplyModifiedProperties();
 	}

@@ -44,3 +44,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   threadGeneration: {fileID: 0}
+  mapGenerator: {fileID: 0}
+  chunkPrefab: {fileID: 6535691625715422120, guid: 48887fa40362ab04988d1101529f9425, type: 3}
+  textureData: {fileID: 11400000, guid: 46a15b8ae1ee9b54e8927a21185ee90d, type: 2}
+  chunkView: 5

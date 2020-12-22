@@ -65,11 +65,11 @@ public struct Block
 		meshData.AddTriangle(0, 1, 2);
 		meshData.AddTriangle(1, 3, 2);
 
-		var faceUV = MapGenerator.TextureData.GetUVPosition(Type, BlockFace.Up);
-		meshData.AddUV((faceUV + new Vector2(0.0f, 1.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV((faceUV + new Vector2(1.0f, 1.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV(faceUV * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV((faceUV + new Vector2(1.0f, 0.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
+		var faceUV = World.TextureData.GetUVPosition(Type, BlockFace.Up);
+		meshData.AddUV((faceUV + new Vector2(0.0f, 1.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV((faceUV + new Vector2(1.0f, 1.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV( faceUV							  * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV((faceUV + new Vector2(1.0f, 0.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
 
 		return meshData;
 	}
@@ -86,11 +86,11 @@ public struct Block
 		meshData.AddTriangle(0, 2, 1);
 		meshData.AddTriangle(1, 2, 3);
 
-		var faceUV = MapGenerator.TextureData.GetUVPosition(Type, BlockFace.Down);
-		meshData.AddUV((faceUV + new Vector2(0.0f, 1.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV((faceUV + new Vector2(1.0f, 1.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV(faceUV * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV((faceUV + new Vector2(1.0f, 0.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
+		var faceUV = World.TextureData.GetUVPosition(Type, BlockFace.Down);
+		meshData.AddUV((faceUV + new Vector2(0.0f, 1.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV((faceUV + new Vector2(1.0f, 1.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV( faceUV							  * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV((faceUV + new Vector2(1.0f, 0.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
 
 		return meshData;
 	}
@@ -107,11 +107,11 @@ public struct Block
 		meshData.AddTriangle(0, 1, 2);
 		meshData.AddTriangle(1, 3, 2);
 
-		var faceUV = MapGenerator.TextureData.GetUVPosition(Type, BlockFace.Right);
-		meshData.AddUV((faceUV + new Vector2(0.0f, 1.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV((faceUV + new Vector2(1.0f, 1.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV(faceUV * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV((faceUV + new Vector2(1.0f, 0.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
+		var faceUV = World.TextureData.GetUVPosition(Type, BlockFace.Right);
+		meshData.AddUV((faceUV + new Vector2(0.0f, 1.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV((faceUV + new Vector2(1.0f, 1.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV( faceUV						      * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV((faceUV + new Vector2(1.0f, 0.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
 
 		return meshData;
 	}
@@ -128,11 +128,11 @@ public struct Block
 		meshData.AddTriangle(0, 1, 2);
 		meshData.AddTriangle(1, 3, 2);
 
-		var faceUV = MapGenerator.TextureData.GetUVPosition(Type, BlockFace.Left);
-		meshData.AddUV((faceUV + new Vector2(0.0f, 1.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV((faceUV + new Vector2(1.0f, 1.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV(faceUV * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV((faceUV + new Vector2(1.0f, 0.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
+		var faceUV = World.TextureData.GetUVPosition(Type, BlockFace.Left);
+		meshData.AddUV((faceUV + new Vector2(0.0f, 1.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV((faceUV + new Vector2(1.0f, 1.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV( faceUV							  * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV((faceUV + new Vector2(1.0f, 0.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
 
 		return meshData;
 	}
@@ -149,11 +149,11 @@ public struct Block
 		meshData.AddTriangle(0, 1, 2);
 		meshData.AddTriangle(1, 3, 2);
 
-		var faceUV = MapGenerator.TextureData.GetUVPosition(Type, BlockFace.Front);
-		meshData.AddUV((faceUV + new Vector2(0.0f, 1.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV((faceUV + new Vector2(1.0f, 1.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV(faceUV * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV((faceUV + new Vector2(1.0f, 0.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
+		var faceUV = World.TextureData.GetUVPosition(Type, BlockFace.Front);
+		meshData.AddUV((faceUV + new Vector2(0.0f, 1.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV((faceUV + new Vector2(1.0f, 1.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV( faceUV							  * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV((faceUV + new Vector2(1.0f, 0.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
 
 		return meshData;
 	}
@@ -170,11 +170,11 @@ public struct Block
 		meshData.AddTriangle(0, 1, 2);
 		meshData.AddTriangle(1, 3, 2);
 
-		var faceUV = MapGenerator.TextureData.GetUVPosition(Type, BlockFace.Back);
-		meshData.AddUV((faceUV + new Vector2(0.0f, 1.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV((faceUV + new Vector2(1.0f, 1.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV(faceUV * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
-		meshData.AddUV((faceUV + new Vector2(1.0f, 0.0f)) * MapGenerator.TextureData.GetTextureTileSize() / MapGenerator.TextureData.GetTextureSize());
+		var faceUV = World.TextureData.GetUVPosition(Type, BlockFace.Back);
+		meshData.AddUV((faceUV + new Vector2(0.0f, 1.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV((faceUV + new Vector2(1.0f, 1.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV( faceUV						      * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
+		meshData.AddUV((faceUV + new Vector2(1.0f, 0.0f)) * World.TextureData.GetTextureTileSize() / World.TextureData.GetTextureSize());
 
 		return meshData;
 	}

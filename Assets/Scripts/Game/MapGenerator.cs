@@ -7,13 +7,11 @@ using ChunkKey = UnityEngine.Vector2Int;
 public class MapGenerator : MonoBehaviour
 {
 	static MapGenerator instance = null;
-	public static TextureData TextureData { get => instance.textureData; }
+
 	public static HeightMap GroundHeightMap { get => instance.heightMap; }
 	public static HeightMap TreeHeightMap { get => instance.treeHeightMap; }
 	public static int GroundHeightMax { get => instance.groundHeightMax; }
 	public static float TreeProbability { get => instance.treeProbability; }
-
-	public int ChunkViewRadius { get => nbChunk; }
 
 	// Ground HeightMap Parameters
 	[SerializeField] int seed = 0;
@@ -32,10 +30,6 @@ public class MapGenerator : MonoBehaviour
 	[SerializeField] Vector2 scaleTree = new Vector2(20, 40);
 
 	[SerializeField] [Range(0.0f, 1.0f)] float treeProbability = 0.0f;
-
-	// Games Parameters
-	[SerializeField] int nbChunk = 10;
-	[SerializeField] TextureData textureData = null;
 
 	HeightMap heightMap = null;
 	HeightMap treeHeightMap = null;
