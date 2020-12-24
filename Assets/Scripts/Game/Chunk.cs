@@ -6,7 +6,7 @@ public class Chunk : MonoBehaviour
 {
 	public const int ChunkSize = 15;
 	public const int ChunkHeight = 50;
-	public const float ChunkRadius = ChunkSize / 2.0f;
+	public static int ChunkRadius = Mathf.FloorToInt(ChunkSize / 2.0f);
 
 	public ChunkData ChunkData { get; set; } = null;
 
@@ -18,7 +18,9 @@ public class Chunk : MonoBehaviour
 	}
 	public void SetBlockAt(Vector3 worldPosition, BlockType type)
 	{
-		var blockPosition = worldPosition - ChunkData.WorldPosition + new Vector3(ChunkRadius, 0.0f, ChunkRadius);
+		var blockPosition = worldPosition - ChunkData.WorldPosition;
+		blockPosition.x += ChunkRadius;
+		blockPosition.z += ChunkRadius;
 
 		ChunkData.SetBlock((int)blockPosition.x, (int)blockPosition.y, (int)blockPosition.z, type);
 	}
@@ -53,5 +55,11 @@ public class Chunk : MonoBehaviour
 		ChunkData.WorldPosition = transform.position;
 
 		StartCoroutine(ChunkDataGeneration());
+	}
+
+	private void OnDrawGizmos()
+	{
+		Gizmos.color = Color.blue;
+		Gizmos.DrawWireCube(transform.position, new Vector3(ChunkSize, ChunkHeight, ChunkSize));
 	}
 }

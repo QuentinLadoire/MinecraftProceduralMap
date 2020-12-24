@@ -16,7 +16,7 @@ public class World : MonoBehaviour
 	}
 	public static Vector2Int GetChunkPosition(Vector3 position)
 	{
-		return new Vector2Int(Mathf.RoundToInt(position.x / (Chunk.ChunkSize - 1)), Mathf.RoundToInt(position.z / (Chunk.ChunkSize - 1)));
+		return new Vector2Int(Mathf.RoundToInt(position.x / Chunk.ChunkSize), Mathf.RoundToInt(position.z / Chunk.ChunkSize));
 	}
 
 	public static Block GetBlock(Vector3 worldPosition)
@@ -48,7 +48,13 @@ public class World : MonoBehaviour
 
 	Chunk GetChunk(Vector3 worldPosition)
 	{
-		return chunkList.Find(item => GetChunkPosition(item.transform.position) == GetChunkPosition(worldPosition));
+		return chunkList.Find((Chunk chunk) =>
+		{
+			var tmp = GetChunkPosition(chunk.transform.position);
+			var tmp1 = GetChunkPosition(worldPosition);
+
+			return tmp == tmp1;
+		});
 	}
 
 	void CreateChunk(Vector3 worldPosition)

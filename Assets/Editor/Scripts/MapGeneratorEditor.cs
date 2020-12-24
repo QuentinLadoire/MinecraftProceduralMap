@@ -34,7 +34,7 @@ public class MapGeneratorEditor : Editor
 	void GenerateGroundTexture()
 	{
 		groundHeightMapPreview = new Texture2D(300, 300);
-		groundHeightMapPreview.filterMode = FilterMode.Bilinear;
+		groundHeightMapPreview.filterMode = FilterMode.Point;
 		groundHeightMapPreview.wrapMode = TextureWrapMode.Clamp;
 
 		HeightMap groundHeighMap = new HeightMap(seedProperty.intValue, octavesProperty.intValue, lacunarityProperty.floatValue, persistanceProperty.floatValue, scaleProperty.vector2Value);
@@ -57,7 +57,7 @@ public class MapGeneratorEditor : Editor
 	void GenerateTreeTexture()
 	{
 		treeHeightMapPreview = new Texture2D(300, 300);
-		treeHeightMapPreview.filterMode = FilterMode.Bilinear;
+		treeHeightMapPreview.filterMode = FilterMode.Point;
 		treeHeightMapPreview.wrapMode = TextureWrapMode.Clamp;
 
 		HeightMap treeHeighMap = new HeightMap(seedTreeProperty.intValue, octavesTreeProperty.intValue, lacunarityTreeProperty.floatValue, persistanceTreeProperty.floatValue, scaleTreeProperty.vector2Value);
