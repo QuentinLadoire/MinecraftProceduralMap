@@ -31,7 +31,7 @@ public class ChunkData
 
 		if (i < 0 || k < 0 || i >= Chunk.ChunkSize ||  k >= Chunk.ChunkSize)
 		{
-			//World.SetBlock(WorldPosition + new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius), blockType);
+			World.SetBlock(WorldPosition + new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius), blockType);
 
 			return;
 		}

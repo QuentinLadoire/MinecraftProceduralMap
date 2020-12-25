@@ -423,7 +423,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1086471265
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -959,11 +959,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
       propertyPath: scaleTree.x
-      value: 1.16
+      value: 1.26
       objectReference: {fileID: 0}
     - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
       propertyPath: scaleTree.y
-      value: 1.16
+      value: 1.26
       objectReference: {fileID: 0}
     - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
       propertyPath: lacunarityTree
@@ -975,7 +975,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
       propertyPath: treeProbability
-      value: 0.89
+      value: 0.85
       objectReference: {fileID: 0}
     - target: {fileID: 573669782037790339, guid: 6898b2f61f4324042825b03515da17db, type: 3}
       propertyPath: m_Name
@@ -1063,7 +1063,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2782994795394980633, guid: 9aaf1595010dd1f488fb1d06ae482522, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9aaf1595010dd1f488fb1d06ae482522, type: 3}
