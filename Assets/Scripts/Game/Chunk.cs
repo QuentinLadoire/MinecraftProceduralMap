@@ -25,7 +25,7 @@ public class Chunk : MonoBehaviour
 		ChunkData.SetBlock((int)blockPosition.x, (int)blockPosition.y, (int)blockPosition.z, type);
 	}
 
-	MeshFilter meshFilter = null;
+ 	MeshFilter meshFilter = null;
 	
 	IEnumerator ChunkDataGeneration()
 	{

@@ -29,7 +29,7 @@ public class HeightMap
 			var X = (x + random.Next(-100000, 100000)) / Scale.x * frequency;
 			var Y = (y + random.Next(-100000, 100000)) / Scale.y * frequency;
 
-			var perlinValue = Mathf.PerlinNoise(X, Y);
+			var perlinValue = Noise.Noise2D(X, Y);
 			height += perlinValue * amplitude;
 
 			maxHeight += 1.0f * amplitude;

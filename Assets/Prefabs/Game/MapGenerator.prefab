@@ -55,5 +55,3 @@ MonoBehaviour:
   persistanceTree: 0
   scaleTree: {x: 1, y: 1}
   treeProbability: 0.89
-  nbChunk: 5
-  textureData: {fileID: 11400000, guid: 46a15b8ae1ee9b54e8927a21185ee90d, type: 2}
