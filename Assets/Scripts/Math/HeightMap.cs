@@ -17,30 +17,32 @@ public class HeightMap
 
 	public float GetHeight(float x, float y)
 	{
-		Random random = new Random(Seed);
+		return Noise.CoherentNoise2D(x, y, Octaves, Persistance, Lacunarity, Scale.x, Scale.y, Seed);
 
-		float frequency = 1.0f;
-		float amplitude = 1.0f;
-		float height = 0.0f;
-		float maxHeight = 0.0f;
-
-		for (int i = 0; i < Octaves; i++)
-		{
-			var X = (x + random.Next(-100000, 100000)) / Scale.x * frequency;
-			var Y = (y + random.Next(-100000, 100000)) / Scale.y * frequency;
-
-			var perlinValue = Noise.Noise2D(X, Y);
-			height += perlinValue * amplitude;
-
-			maxHeight += 1.0f * amplitude;
-
-			frequency *= Lacunarity;
-			amplitude *= Persistance;
-		}
-
-		height = Mathf.InverseLerp(0.0f, maxHeight, height);
-
-		return height;
+		//Random random = new Random(Seed);
+		//
+		//float frequency = 1.0f;
+		//float amplitude = 1.0f;
+		//float height = 0.0f;
+		//float maxHeight = 0.0f;
+		//
+		//for (int i = 0; i < Octaves; i++)
+		//{
+		//	var X = (x + random.Next(-100000, 100000)) / Scale.x * frequency;
+		//	var Y = (y + random.Next(-100000, 100000)) / Scale.y * frequency;
+		//
+		//	var perlinValue = Noise.Noise2D(X, Y);
+		//	height += perlinValue * amplitude;
+		//
+		//	maxHeight += amplitude;
+		//
+		//	frequency *= Lacunarity;
+		//	amplitude *= Persistance;
+		//}
+		//
+		//height = Mathf.InverseLerp(0.0f, maxHeight, height);
+		//
+		//return height;
 	}
 	public float GetHeight(Vector2 position)
 	{

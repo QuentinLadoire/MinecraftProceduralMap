@@ -62,7 +62,7 @@ public class TMP : MonoBehaviour
         rend.material.mainTexture = noiseTex;
 
         Noise.Benchmark();
-        Noise.Benchmark2();
+        //Noise.Benchmark2();
     }
     void Update()
     {

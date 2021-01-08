@@ -97,9 +97,9 @@ public class Noise
 		int xi = x0 & 255;
 		int yi = y0 & 255;
 
-		int aa = perm[perm[xi] + yi];
-		int ba = perm[perm[xi + 1] + yi];
-		int ab = perm[perm[xi] + yi + 1];
+		int aa = perm[perm[xi    ] + yi    ];
+		int ba = perm[perm[xi + 1] + yi    ];
+		int ab = perm[perm[xi    ] + yi + 1];
 		int bb = perm[perm[xi + 1] + yi + 1];
 
 		float dx0 = (x - x0);
@@ -154,76 +154,151 @@ public class Noise
 		int x0 = (int)Math.Floor(x);
 		int y0 = (int)Math.Floor(y);
 		int z0 = (int)Math.Floor(z);
-		int x1 = x0 + 1;
-		int y1 = y0 + 1;
-		int z1 = z0 + 1;
 
-		//Gradient vector
-		int aaa = perm[perm[perm[x0 & 255] + y0 & 255] + z0 & 255];
-		int aba = perm[perm[perm[x0 & 255] + y1 & 255] + z0 & 255];
-		int aab = perm[perm[perm[x0 & 255] + y0 & 255] + z1 & 255];
-		int abb = perm[perm[perm[x0 & 255] + y1 & 255] + z1 & 255];
-		int baa = perm[perm[perm[x1 & 255] + y0 & 255] + z0 & 255];
-		int bba = perm[perm[perm[x1 & 255] + y1 & 255] + z0 & 255];
-		int bab = perm[perm[perm[x1 & 255] + y0 & 255] + z1 & 255];
-		int bbb = perm[perm[perm[x1 & 255] + y1 & 255] + z1 & 255];
+		int xi = x0 & 255;
+		int yi = y0 & 255;
+		int zi = z0 & 255;
 
+		int aaa = perm[perm[perm[xi    ] + yi    ] + zi    ];
+		int aba = perm[perm[perm[xi    ] + yi + 1] + zi    ];
+		int baa = perm[perm[perm[xi + 1] + yi    ] + zi    ];
+		int bba = perm[perm[perm[xi + 1] + yi + 1] + zi    ];
+		int aab = perm[perm[perm[xi    ] + yi    ] + zi + 1];
+		int abb = perm[perm[perm[xi    ] + yi + 1] + zi + 1];
+		int bab = perm[perm[perm[xi + 1] + yi    ] + zi + 1];
+		int bbb = perm[perm[perm[xi + 1] + yi + 1] + zi + 1];
 
-		//Distance vector
 		float dx0 = x - x0;
+		float dx1 = x - (x0 + 1);
 		float dy0 = y - y0;
+		float dy1 = y - (y0 + 1);
 		float dz0 = z - z0;
+		float dz1 = z - (z0 + 1);
 
-		float dx1 = x - x1;
-		float dy1 = y - y0;
-		float dz1 = z - z0;
+		float u = Fade(dx0);
+		float v = Fade(dy0);
 
-		float dx2 = x - x0;
-		float dy2 = y - y1;
-		float dz2 = z - z0;
+		return (Lerp(Lerp(Lerp(Grad(aaa, dx0, dy0, dz0), Grad(baa, dx1, dy0, dz0), u),
+						  Lerp(Grad(aba, dx0, dy1, dz0), Grad(bba, dx1, dy1, dz0), u),
+						  v),
 
-		float dx3 = x - x1;
-		float dy3 = y - y1;
-		float dz3 = z - z0;
+					 Lerp(Lerp(Grad(aab, dx0, dy0, dz1), Grad(bab, dx1, dy0, dz1), u),
+						  Lerp(Grad(abb, dx0, dy1, dz1), Grad(bbb, dx1, dy1, dz1), u),
+						  v),
+					 Fade(dz0)) + 1) / 2;
 
-		float dx4 = x - x0;
-		float dy4 = y - y0;
-		float dz4 = z - z1;
+		//int x0 = (int)Math.Floor(x);
+		//int y0 = (int)Math.Floor(y);
+		//int z0 = (int)Math.Floor(z);
+		//int x1 = x0 + 1;
+		//int y1 = y0 + 1;
+		//int z1 = z0 + 1;
+		//
+		////Gradient vector
+		//int aaa = perm[perm[perm[x0 & 255] + y0 & 255] + z0 & 255];
+		//int aba = perm[perm[perm[x0 & 255] + y1 & 255] + z0 & 255];
+		//int baa = perm[perm[perm[x1 & 255] + y0 & 255] + z0 & 255];
+		//int bba = perm[perm[perm[x1 & 255] + y1 & 255] + z0 & 255];
+		//int aab = perm[perm[perm[x0 & 255] + y0 & 255] + z1 & 255];
+		//int abb = perm[perm[perm[x0 & 255] + y1 & 255] + z1 & 255];
+		//int bab = perm[perm[perm[x1 & 255] + y0 & 255] + z1 & 255];
+		//int bbb = perm[perm[perm[x1 & 255] + y1 & 255] + z1 & 255];
+		//
+		//
+		////Distance vector
+		//float dx0 = x - x0;
+		//float dy0 = y - y0;
+		//float dz0 = z - z0;
+		//
+		//float dx1 = x - x1;
+		//float dy1 = y - y0;
+		//float dz1 = z - z0;
+		//
+		//float dx2 = x - x0;
+		//float dy2 = y - y1;
+		//float dz2 = z - z0;
+		//
+		//float dx3 = x - x1;
+		//float dy3 = y - y1;
+		//float dz3 = z - z0;
+		//
+		//float dx4 = x - x0;
+		//float dy4 = y - y0;
+		//float dz4 = z - z1;
+		//
+		//float dx5 = x - x1;
+		//float dy5 = y - y0;
+		//float dz5 = z - z1;
+		//
+		//float dx6 = x - x0;
+		//float dy6 = y - y1;
+		//float dz6 = z - z1;
+		//
+		//float dx7 = x - x1;
+		//float dy7 = y - y1;
+		//float dz7 = z - z1;
+		//
+		////Dot
+		//float dot0 = Grad(aaa, dx0, dy0, dz0);
+		//float dot1 = Grad(baa, dx1, dy1, dz1);
+		//float dot2 = Grad(aba, dx2, dy2, dz2);
+		//float dot3 = Grad(bba, dx3, dy3, dz3);
+		//float dot4 = Grad(aab, dx4, dy4, dz4);
+		//float dot5 = Grad(bab, dx5, dy5, dz5);
+		//float dot6 = Grad(abb, dx6, dy6, dz6);
+		//float dot7 = Grad(bbb, dx7, dy7, dz7);
+		//
+		////Lerp
+		//float lerp1 = Lerp(dot0, dot1, Fade(x - x0));
+		//float lerp2 = Lerp(dot2, dot3, Fade(x - x0));
+		//float lerp3 = Lerp(lerp1, lerp2, Fade(y - y0));
+		//
+		//float lerp4 = Lerp(dot4, dot5, Fade(x - x0));
+		//float lerp5 = Lerp(dot6, dot7, Fade(x - x0));
+		//float lerp6 = Lerp(lerp4, lerp5, Fade(y - y0));
+		//
+		//float lerp7 = Lerp(lerp3, lerp6, Fade(z - z0));
+		//
+		//return (lerp7 + 1) / 2;
+	}
 
-		float dx5 = x - x1;
-		float dy5 = y - y0;
-		float dz5 = z - z1;
+	public static float CoherentNoise2D(float x, float y, int octaves, float persistance, float lacunarity, float scaleX, float scaleY, int seed)
+	{
+		Random random = new Random(seed);
 
-		float dx6 = x - x0;
-		float dy6 = y - y1;
-		float dz6 = z - z1;
+		float frequency = 1.0f;
+		float amplitude = 1.0f;
+		float height = 0.0f;
+		float maxHeight = 0.0f;
 
-		float dx7 = x - x1;
-		float dy7 = y - y1;
-		float dz7 = z - z1;
+		for (int i = 0; i < octaves; i++)
+		{
+			height += Noise2D((x + random.Next(-100000, 100000)) / scaleX * frequency, (y + random.Next(-100000, 100000)) / scaleY * frequency) * amplitude;
+			maxHeight += amplitude;
 
-		//Dot
-		float dot0 = Grad(aaa, dx0, dy0, dz0);
-		float dot1 = Grad(baa, dx1, dy1, dz1);
-		float dot2 = Grad(aba, dx2, dy2, dz2);
-		float dot3 = Grad(bba, dx3, dy3, dz3);
-		float dot4 = Grad(aab, dx4, dy4, dz4);
-		float dot5 = Grad(bab, dx5, dy5, dz5);
-		float dot6 = Grad(abb, dx6, dy6, dz6);
-		float dot7 = Grad(bbb, dx7, dy7, dz7);
+			frequency *= lacunarity;
+			amplitude *= persistance;
+		}
 
-		//Lerp
-		float lerp1 = Lerp(dot0, dot1, Fade(x - x0));
-		float lerp2 = Lerp(dot2, dot3, Fade(x - x0));
-		float lerp3 = Lerp(lerp1, lerp2, Fade(y - y0));
+		return height / maxHeight;
+	}
+	public static float CoherentNoise3D(float x, float y, float z, float octaves, float persistance, float lacunarity)
+	{
+		float frequency = 1.0f;
+		float amplitude = 1.0f;
+		float height = 0.0f;
+		float maxHeight = 0.0f;
 
-		float lerp4 = Lerp(dot4, dot5, Fade(x - x0));
-		float lerp5 = Lerp(dot6, dot7, Fade(x - x0));
-		float lerp6 = Lerp(lerp4, lerp5, Fade(y - y0));
+		for (int i = 0; i < octaves; i++)
+		{
+			height += Noise3D(x * frequency, y * frequency, z * frequency) * amplitude;
+			maxHeight += amplitude;
 
-		float lerp7 = Lerp(lerp3, lerp6, Fade(z - z0));
+			frequency *= lacunarity;
+			amplitude *= persistance;
+		}
 
-		return (lerp7 + 1) / 2;
+		return height / maxHeight;
 	}
 
 	public static void Benchmark(int enumeration = 10000)
@@ -241,7 +316,7 @@ public class Noise
 				}
 
 			delay = System.DateTime.Now.Subtract(start).TotalSeconds;
-			UnityEngine.Debug.Log("Delay : " + delay + " / " + value);
+			UnityEngine.Debug.LogError("Delay : " + delay + " / " + value);
 		}
 	}
 	public static void Benchmark2(int iteration = 10000)
@@ -257,6 +332,6 @@ public class Noise
 			}
 
 		delay = System.DateTime.Now.Subtract(start1).TotalSeconds;
-		UnityEngine.Debug.Log("Delay : " + delay + " / " + value);
+		UnityEngine.Debug.LogError("Delay : " + delay + " / " + value);
 	}
 }
