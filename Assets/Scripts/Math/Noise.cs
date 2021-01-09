@@ -1,9 +1,8 @@
-
 using System;
 
 public class Noise
 {
-	static int[] perm = {
+	static readonly int[] perm = {
 		151, 160, 137,  91,  90,  15, 131,  13, 201,  95,  96,  53, 194, 233,
 		  7, 225, 140,  36, 103,  30,  69, 142,   8,  99,  37, 240,  21,  10,
 		 23, 190,   6, 148, 247, 120, 234,  75,   0,  26, 197,  62,  94, 252,
@@ -160,12 +159,13 @@ public class Noise
 		int zi = z0 & 255;
 
 		int aaa = perm[perm[perm[xi    ] + yi    ] + zi    ];
-		int aba = perm[perm[perm[xi    ] + yi + 1] + zi    ];
 		int baa = perm[perm[perm[xi + 1] + yi    ] + zi    ];
+		int aba = perm[perm[perm[xi    ] + yi + 1] + zi    ];
 		int bba = perm[perm[perm[xi + 1] + yi + 1] + zi    ];
+
 		int aab = perm[perm[perm[xi    ] + yi    ] + zi + 1];
-		int abb = perm[perm[perm[xi    ] + yi + 1] + zi + 1];
 		int bab = perm[perm[perm[xi + 1] + yi    ] + zi + 1];
+		int abb = perm[perm[perm[xi    ] + yi + 1] + zi + 1];
 		int bbb = perm[perm[perm[xi + 1] + yi + 1] + zi + 1];
 
 		float dx0 = x - x0;
@@ -273,7 +273,8 @@ public class Noise
 
 		for (int i = 0; i < octaves; i++)
 		{
-			height += Noise2D((x + random.Next(-100000, 100000)) / scaleX * frequency, (y + random.Next(-100000, 100000)) / scaleY * frequency) * amplitude;
+			height += Noise2D((x + random.Next(-100000, 100000)) / scaleX * frequency,
+							  (y + random.Next(-100000, 100000)) / scaleY * frequency) * amplitude;
 			maxHeight += amplitude;
 
 			frequency *= lacunarity;
@@ -282,8 +283,10 @@ public class Noise
 
 		return height / maxHeight;
 	}
-	public static float CoherentNoise3D(float x, float y, float z, float octaves, float persistance, float lacunarity)
+	public static float CoherentNoise3D(float x, float y, float z, float octaves, float persistance, float lacunarity, float scaleX, float scaleY, float scaleZ, int seed)
 	{
+		Random random = new Random(seed);
+
 		float frequency = 1.0f;
 		float amplitude = 1.0f;
 		float height = 0.0f;
@@ -291,7 +294,9 @@ public class Noise
 
 		for (int i = 0; i < octaves; i++)
 		{
-			height += Noise3D(x * frequency, y * frequency, z * frequency) * amplitude;
+			height += Noise3D((x + random.Next(-100000, 100000)) / scaleX * frequency,
+							  (y + random.Next(-100000, 100000)) / scaleY * frequency,
+							  (z + random.Next(-100000, 100000)) / scaleZ * frequency) * amplitude;
 			maxHeight += amplitude;
 
 			frequency *= lacunarity;
@@ -301,25 +306,24 @@ public class Noise
 		return height / maxHeight;
 	}
 
-	public static void Benchmark(int enumeration = 10000)
+	public static double Benchmark(int enumeration = 10000)
 	{
 		double delay = 0.0d;
 
-		for (int u = 0; u < 1; u++)
-		{
-			float value = 0.0f;
-			var start = System.DateTime.Now;
-			for (int i = 0; i < enumeration; i++)
-				for (int j = 0; j < enumeration; j++)
-				{
-					value += Noise2D(i + 0.5f, j + 0.5f);
-				}
+		float value = 0.0f;
+		var start = System.DateTime.Now;
+		for (int i = 0; i < enumeration; i++)
+			for (int j = 0; j < enumeration; j++)
+			{
+				value += Noise2D(i + 0.5f, j + 0.5f);
+			}
 
-			delay = System.DateTime.Now.Subtract(start).TotalSeconds;
-			UnityEngine.Debug.LogError("Delay : " + delay + " / " + value);
-		}
+		delay = System.DateTime.Now.Subtract(start).TotalSeconds;
+		UnityEngine.Debug.LogError("Delay : " + delay + " / " + value);
+
+		return delay;
 	}
-	public static void Benchmark2(int iteration = 10000)
+	public static double Benchmark2(int iteration = 10000)
 	{
 		double delay = 0.0d;
 
@@ -333,5 +337,7 @@ public class Noise
 
 		delay = System.DateTime.Now.Subtract(start1).TotalSeconds;
 		UnityEngine.Debug.LogError("Delay : " + delay + " / " + value);
+
+		return delay;
 	}
 }

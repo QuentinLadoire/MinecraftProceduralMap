@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 
 [CustomEditor(typeof(MapGenerator))]
 public class MapGeneratorEditor : Editor
@@ -30,6 +31,10 @@ public class MapGeneratorEditor : Editor
 
 	Texture2D groundHeightMapPreview = null;
 	Texture2D treeHeightMapPreview = null;
+
+	PreviewRenderUtility renderUtils;
+	RenderTexture renderTexture = null;
+	GameObject noise3DPreview = null;
 
 	void GenerateGroundTexture()
 	{
@@ -78,6 +83,61 @@ public class MapGeneratorEditor : Editor
 		treeHeightMapPreview.Apply();
 	}
 
+	GameObject CreateNoise3DPreview()
+	{
+		var noisePreview = new GameObject();
+
+		var faces = new GameObject[6];
+		faces[0] = GameObject.CreatePrimitive(PrimitiveType.Quad);
+		faces[0].transform.position = new Vector3(0.5f, 0.0f, 0.0f);
+		faces[0].transform.eulerAngles = new Vector3(0.0f, -90.0f, 0.0f);
+		faces[0].transform.parent = noisePreview.transform;
+
+		faces[1] = GameObject.CreatePrimitive(PrimitiveType.Quad);
+		faces[1].transform.position = new Vector3(-0.5f, 0.0f, 0.0f);
+		faces[1].transform.eulerAngles = new Vector3(0.0f, 90.0f, 0.0f);
+		faces[1].transform.parent = noisePreview.transform;
+
+		faces[2] = GameObject.CreatePrimitive(PrimitiveType.Quad);
+		faces[2].transform.position = new Vector3(0.0f, 0.5f, 0.0f);
+		faces[2].transform.eulerAngles = new Vector3(90.0f, 0.0f, 0.0f);
+		faces[2].transform.parent = noisePreview.transform;
+
+		faces[3] = GameObject.CreatePrimitive(PrimitiveType.Quad);
+		faces[3].transform.position = new Vector3(0.0f, -0.5f, 0.0f);
+		faces[3].transform.eulerAngles = new Vector3(-90.0f, 0.0f, 0.0f);
+		faces[3].transform.parent = noisePreview.transform;
+
+		faces[4] = GameObject.CreatePrimitive(PrimitiveType.Quad);
+		faces[4].transform.position = new Vector3(0.0f, 0.0f, 0.5f);
+		faces[4].transform.eulerAngles = new Vector3(0.0f, 180.0f, 0.0f);
+		faces[4].transform.parent = noisePreview.transform;
+
+		faces[5] = GameObject.CreatePrimitive(PrimitiveType.Quad);
+		faces[5].transform.position = new Vector3(0.0f, 0.0f, -0.5f);
+		faces[5].transform.parent = noisePreview.transform;
+
+		for (int i = 0; i < 6; i++)
+		{
+			var colors = new Color[20 * 20];
+			for (int x = 0; x < 20; x++)
+				for (int y = 0; y < 20; y++)
+					colors[y + x * 20] = Color.Lerp(Color.black, Color.white, Noise.Noise3D(faces[i].transform.position.x, faces[i].transform.position.y, faces[i].transform.position.z));
+
+			Texture2D texture = new Texture2D(20, 20);
+			texture.filterMode = FilterMode.Point;
+
+			texture.SetPixels(colors);
+			texture.Apply();
+
+			var mat = new Material(Shader.Find("Standard"));
+			mat.mainTexture = texture;
+			faces[i].GetComponent<Renderer>().sharedMaterial = mat;
+		}
+
+		return noisePreview;
+	}
+
 	private void Awake()
 	{
 		titleStyle = new GUIStyle();
@@ -113,6 +173,21 @@ public class MapGeneratorEditor : Editor
 
 		GenerateGroundTexture();
 		GenerateTreeTexture();
+
+		renderTexture = new RenderTexture(300, 300, 16);
+		renderTexture.filterMode = FilterMode.Point;
+
+		renderUtils = new PreviewRenderUtility();
+		noise3DPreview = CreateNoise3DPreview();
+		renderUtils.AddSingleGO(noise3DPreview);
+
+		renderUtils.camera.transform.position = new Vector3(0, 0, -10);
+		renderUtils.camera.farClipPlane = 20;
+		renderUtils.camera.targetTexture = renderTexture;
+	}
+	private void OnDisable()
+	{
+		renderUtils.Cleanup();
 	}
 
 	public override void OnInspectorGUI()
@@ -149,6 +224,23 @@ public class MapGeneratorEditor : Editor
 
 		GUILayout.Box(treeHeightMapPreview);
 		if (GUILayout.Button(new GUIContent("Generate Tree"))) GenerateTreeTexture();
+
+		renderTexture.Release();
+		renderUtils.camera.Render();
+		GUILayout.Box(renderTexture);
+		var rect = GUILayoutUtility.GetLastRect();
+
+		if (Event.current.type == EventType.MouseDrag)
+		{
+			if (rect.Contains(Event.current.mousePosition))
+			{
+				var delta = Event.current.delta;
+				noise3DPreview.transform.RotateAround(Vector3.zero, Vector3.up, -delta.x);
+				noise3DPreview.transform.RotateAround(Vector3.zero, Vector3.right, -delta.y);
+
+				Repaint();
+			}
+		}
 
 		serializedObject.ApplyModifiedProperties();
 	}
