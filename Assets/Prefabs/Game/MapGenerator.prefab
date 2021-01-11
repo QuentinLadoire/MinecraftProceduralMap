@@ -43,15 +43,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99d539b5dc9ebb34d9612f07ffd94987, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  seed: 0
-  octaves: 4
-  lacunarity: 2
-  persistance: 0.5
-  scale: {x: 40, y: 80}
-  groundHeightMax: 15
-  seedTree: 0
-  octavesTree: 4
-  lacunarityTree: 1
-  persistanceTree: 0
-  scaleTree: {x: 1, y: 1}
-  treeProbability: 0.89
+  groundMap:
+    seed: 0
+    octaves: 4
+    lacunarity: 2
+    persistance: 0.5
+    scale: {x: 40, y: 80}
+    heightMax: 15
+  treeMap:
+    seed: 0
+    scale: {x: 1.16, y: 1.16}
+    probability: 0.15
+  caveMap:
+    seed: 0
+    octaves: 4
+    lacunarity: 2
+    persistance: 0.5
+    scale: {x: 10, y: 10, z: 10}
+    heighMax: 10
+    probability: 0.5

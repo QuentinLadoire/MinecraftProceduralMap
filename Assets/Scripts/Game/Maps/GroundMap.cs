@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public class GroundMap
 {
     public int seed = 0;
@@ -22,6 +23,15 @@ public class GroundMap
     public float GetHeight(Vector2 position)
 	{
         return GetHeight(position.x, position.y);
+	}
+
+    public float GetHeightUnscale(float x, float y)
+	{
+        return Noise.CoherentNoise2D(x, y, octaves, persistance, lacunarity, scale.x, scale.y, seed);
+	}
+    public float GetHeightUnscale(Vector2 position)
+	{
+        return GetHeightUnscale(position.x, position.y);
 	}
 
     public GroundMap() { }

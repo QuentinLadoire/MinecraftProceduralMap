@@ -3,7 +3,69 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.SceneManagement;
+using System.Reflection;
+
+public static class Utility
+{
+	private static object GetValue_Imp(object source, string name)
+	{
+		if (source == null)
+			return null;
+		var type = source.GetType();
+
+		while (type != null)
+		{
+			var f = type.GetField(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+			if (f != null)
+				return f.GetValue(source);
+
+			var p = type.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+			if (p != null)
+				return p.GetValue(source, null);
+
+			type = type.BaseType;
+		}
+		return null;
+	}
+	private static object GetValue_Imp(object source, string name, int index)
+	{
+		var enumerable = GetValue_Imp(source, name) as System.Collections.IEnumerable;
+		if (enumerable == null) return null;
+		var enm = enumerable.GetEnumerator();
+		//while (index-- >= 0)
+		//    enm.MoveNext();
+		//return enm.Current;
+
+		for (int i = 0; i <= index; i++)
+		{
+			if (!enm.MoveNext()) return null;
+		}
+		return enm.Current;
+	}
+
+	public static object GetTargetObjectOfProperty(SerializedProperty prop)
+	{
+		if (prop == null) return null;
+
+		var path = prop.propertyPath.Replace(".Array.data[", "[");
+		object obj = prop.serializedObject.targetObject;
+		var elements = path.Split('.');
+		foreach (var element in elements)
+		{
+			if (element.Contains("["))
+			{
+				var elementName = element.Substring(0, element.IndexOf("["));
+				var index = System.Convert.ToInt32(element.Substring(element.IndexOf("[")).Replace("[", "").Replace("]", ""));
+				obj = GetValue_Imp(obj, elementName, index);
+			}
+			else
+			{
+				obj = GetValue_Imp(obj, element);
+			}
+		}
+		return obj;
+	}
+}
 
 [CustomEditor(typeof(MapGenerator))]
 public class MapGeneratorEditor : Editor
@@ -11,30 +73,20 @@ public class MapGeneratorEditor : Editor
 	GUIStyle titleStyle = null;
 	GUIStyle subTitleStyle = null;
 
-	// Ground HeightMap Parameters
-	SerializedProperty seedProperty = null;
-	SerializedProperty octavesProperty = null;
-	SerializedProperty lacunarityProperty = null;
-	SerializedProperty persistanceProperty = null;
-	SerializedProperty scaleProperty = null;
+	// MapGenerator property
+	SerializedProperty groundMapProperty = null;
+	SerializedProperty treeMapProperty = null;
+	SerializedProperty caveMapProperty = null;
 
-	SerializedProperty groundHeightMaxProperty = null;
-
-	// Tree HeightMap Parameters
-	SerializedProperty seedTreeProperty = null;
-	SerializedProperty octavesTreeProperty = null;
-	SerializedProperty lacunarityTreeProperty = null;
-	SerializedProperty persistanceTreeProperty = null;
-	SerializedProperty scaleTreeProperty = null;
-
-	SerializedProperty treeProbabilityProperty = null;
-
+	// Noise2D preview
 	Texture2D groundHeightMapPreview = null;
 	Texture2D treeHeightMapPreview = null;
 
+	// Noise3D preview
 	PreviewRenderUtility renderUtils;
 	RenderTexture renderTexture = null;
 	GameObject noise3DPreview = null;
+	GameObject[] faces = null;
 
 	void GenerateGroundTexture()
 	{
@@ -42,7 +94,7 @@ public class MapGeneratorEditor : Editor
 		groundHeightMapPreview.filterMode = FilterMode.Point;
 		groundHeightMapPreview.wrapMode = TextureWrapMode.Clamp;
 
-		HeightMap groundHeighMap = new HeightMap(seedProperty.intValue, octavesProperty.intValue, lacunarityProperty.floatValue, persistanceProperty.floatValue, scaleProperty.vector2Value);
+		GroundMap groundMap = Utility.GetTargetObjectOfProperty(groundMapProperty) as GroundMap;
 
 		var nbXPixel = groundHeightMapPreview.width / (Chunk.ChunkSize * 5);
 		var nbYPixel = groundHeightMapPreview.height / (Chunk.ChunkSize * 5);
@@ -50,9 +102,9 @@ public class MapGeneratorEditor : Editor
 		for (int j = 0; j < Chunk.ChunkSize * 5; j++)
 			for (int i = 0; i < Chunk.ChunkSize * 5; i++)
 			{
-				var height = groundHeighMap.GetHeight(i - Chunk.ChunkRadius, j - Chunk.ChunkRadius);
+				var height = groundMap.GetHeightUnscale(i - Chunk.ChunkRadius, j - Chunk.ChunkRadius);
 				var color = Color.Lerp(Color.black, Color.white, height);
-
+				
 				var colors = Enumerable.Repeat<Color>(color, nbXPixel * nbYPixel).ToArray();
 				groundHeightMapPreview.SetPixels(i * nbXPixel, j * nbYPixel, nbXPixel, nbYPixel, colors);
 			}
@@ -65,7 +117,7 @@ public class MapGeneratorEditor : Editor
 		treeHeightMapPreview.filterMode = FilterMode.Point;
 		treeHeightMapPreview.wrapMode = TextureWrapMode.Clamp;
 
-		HeightMap treeHeighMap = new HeightMap(seedTreeProperty.intValue, octavesTreeProperty.intValue, lacunarityTreeProperty.floatValue, persistanceTreeProperty.floatValue, scaleTreeProperty.vector2Value);
+		TreeMap treeMap = Utility.GetTargetObjectOfProperty(treeMapProperty) as TreeMap;
 
 		var nbXPixel = treeHeightMapPreview.width / (Chunk.ChunkSize * 5);
 		var nbYPixel = treeHeightMapPreview.height / (Chunk.ChunkSize * 5);
@@ -73,9 +125,9 @@ public class MapGeneratorEditor : Editor
 		for (int j = 0; j < Chunk.ChunkSize * 5; j++)
 			for (int i = 0; i < Chunk.ChunkSize * 5; i++)
 			{
-				var height = treeHeighMap.GetHeight(i - Chunk.ChunkRadius, j - Chunk.ChunkRadius);
-				var color = (height < treeProbabilityProperty.floatValue) ? Color.Lerp(Color.black, Color.white, height) : Color.green;
-
+				var height = treeMap.GetHeight(i - Chunk.ChunkRadius, j - Chunk.ChunkRadius);
+				var color = (height > treeMap.probability) ? Color.Lerp(Color.black, Color.white, height) : Color.green;
+				
 				var colors = Enumerable.Repeat<Color>(color, nbXPixel * nbYPixel).ToArray();
 				treeHeightMapPreview.SetPixels(i * nbXPixel, j * nbYPixel, nbXPixel, nbYPixel, colors);
 			}
@@ -87,7 +139,7 @@ public class MapGeneratorEditor : Editor
 	{
 		var noisePreview = new GameObject();
 
-		var faces = new GameObject[6];
+		faces = new GameObject[6];
 		faces[0] = GameObject.CreatePrimitive(PrimitiveType.Quad);
 		faces[0].transform.position = new Vector3(0.5f, 0.0f, 0.0f);
 		faces[0].transform.eulerAngles = new Vector3(0.0f, -90.0f, 0.0f);
@@ -117,12 +169,18 @@ public class MapGeneratorEditor : Editor
 		faces[5].transform.position = new Vector3(0.0f, 0.0f, -0.5f);
 		faces[5].transform.parent = noisePreview.transform;
 
+		return noisePreview;
+	}
+	void UpdateNoise3DPreview()
+	{
+		CaveMap caveMap = Utility.GetTargetObjectOfProperty(caveMapProperty) as CaveMap;
+
 		for (int i = 0; i < 6; i++)
 		{
 			var colors = new Color[20 * 20];
 			for (int x = 0; x < 20; x++)
 				for (int y = 0; y < 20; y++)
-					colors[y + x * 20] = Color.Lerp(Color.black, Color.white, Noise.Noise3D(faces[i].transform.position.x, faces[i].transform.position.y, faces[i].transform.position.z));
+					colors[y + x * 20] = Color.Lerp(Color.black, Color.white, caveMap.GetHeight(faces[i].transform.position.x, faces[i].transform.position.y, faces[i].transform.position.z));
 
 			Texture2D texture = new Texture2D(20, 20);
 			texture.filterMode = FilterMode.Point;
@@ -132,10 +190,8 @@ public class MapGeneratorEditor : Editor
 
 			var mat = new Material(Shader.Find("Standard"));
 			mat.mainTexture = texture;
-			faces[i].GetComponent<Renderer>().sharedMaterial = mat;
+			faces[i].GetComponent<Renderer>().material = mat;
 		}
-
-		return noisePreview;
 	}
 
 	private void Awake()
@@ -153,23 +209,9 @@ public class MapGeneratorEditor : Editor
 
 	private void OnEnable()
 	{
-		// Ground HeightMap Parameters
-		seedProperty = serializedObject.FindProperty("seed");
-		octavesProperty = serializedObject.FindProperty("octaves");
-		lacunarityProperty = serializedObject.FindProperty("lacunarity");
-		persistanceProperty = serializedObject.FindProperty("persistance");
-		scaleProperty = serializedObject.FindProperty("scale");
-
-		groundHeightMaxProperty = serializedObject.FindProperty("groundHeightMax");
-
-		// Tree HeightMap Parameters
-		seedTreeProperty = serializedObject.FindProperty("seedTree");
-		octavesTreeProperty = serializedObject.FindProperty("octavesTree");
-		lacunarityTreeProperty = serializedObject.FindProperty("lacunarityTree");
-		persistanceTreeProperty = serializedObject.FindProperty("persistanceTree");
-		scaleTreeProperty = serializedObject.FindProperty("scaleTree");
-
-		treeProbabilityProperty = serializedObject.FindProperty("treeProbability");
+		groundMapProperty = serializedObject.FindProperty("groundMap");
+		treeMapProperty = serializedObject.FindProperty("treeMap");
+		caveMapProperty = serializedObject.FindProperty("caveMap");
 
 		GenerateGroundTexture();
 		GenerateTreeTexture();
@@ -194,36 +236,20 @@ public class MapGeneratorEditor : Editor
 	{
 		serializedObject.Update();
 
-		// Ground HeightMap Parameters
-		EditorGUILayout.LabelField(new GUIContent("Ground HeightMap"), titleStyle);
-		EditorGUILayout.LabelField(new GUIContent("Parameters :"), subTitleStyle);
-
-		EditorGUILayout.PropertyField(seedProperty);
-		EditorGUILayout.PropertyField(octavesProperty);
-		EditorGUILayout.PropertyField(lacunarityProperty);
-		EditorGUILayout.PropertyField(persistanceProperty);
-		EditorGUILayout.PropertyField(scaleProperty);
-
-		EditorGUILayout.PropertyField(groundHeightMaxProperty);
+		// GroundMap
+		EditorGUILayout.PropertyField(groundMapProperty);
 
 		GUILayout.Box(groundHeightMapPreview);
 		if (GUILayout.Button(new GUIContent("Generate Ground"))) GenerateGroundTexture();
 
-		// Tree HeightMap Parameters
-		EditorGUILayout.Space();
-		EditorGUILayout.LabelField(new GUIContent("Tree HeightMap"), titleStyle);
-		EditorGUILayout.LabelField(new GUIContent("Parameters :"), subTitleStyle);
-
-		EditorGUILayout.PropertyField(seedTreeProperty);
-		EditorGUILayout.PropertyField(octavesTreeProperty);
-		EditorGUILayout.PropertyField(lacunarityTreeProperty);
-		EditorGUILayout.PropertyField(persistanceTreeProperty);
-		EditorGUILayout.PropertyField(scaleTreeProperty);
-
-		EditorGUILayout.PropertyField(treeProbabilityProperty);
+		// TreeMap
+		EditorGUILayout.PropertyField(treeMapProperty);
 
 		GUILayout.Box(treeHeightMapPreview);
 		if (GUILayout.Button(new GUIContent("Generate Tree"))) GenerateTreeTexture();
+
+		// CaveMap
+		EditorGUILayout.PropertyField(caveMapProperty);
 
 		renderTexture.Release();
 		renderUtils.camera.Render();
@@ -241,6 +267,8 @@ public class MapGeneratorEditor : Editor
 				Repaint();
 			}
 		}
+
+		if (GUILayout.Button(new GUIContent("Generate Cave"))) UpdateNoise3DPreview();
 
 		serializedObject.ApplyModifiedProperties();
 	}

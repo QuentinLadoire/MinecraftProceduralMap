@@ -133,8 +133,7 @@ public class ChunkData
 				for (int k = 0; k < Chunk.ChunkSize; k++)
 				{
 					var blockPosition = new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius);
-					var height = World.MapGenerator.GroundHeightMap.GetHeight(WorldPosition.x + blockPosition.x, WorldPosition.z + blockPosition.z);
-					var groundHeight = height * World.MapGenerator.GroundHeightMax;
+					var groundHeight = World.MapGenerator.groundMap.GetHeight(WorldPosition.x + blockPosition.x, WorldPosition.z + blockPosition.z);
 					if (blockPosition.y < groundHeight)
 						SetBlock(i, j, k, BlockType.Grass); // if block is below ground Height, create a block.
 				}
@@ -150,9 +149,9 @@ public class ChunkData
 					if (blocks[i, j, k].Type == BlockType.Grass)
 					{
 						var blockPosition = new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius);
-						var treeHeight = World.MapGenerator.TreeHeightMap.GetHeight(WorldPosition.x + blockPosition.x, WorldPosition.z + blockPosition.z);
-
-						if (treeHeight > World.MapGenerator.TreeProbability)
+						var treeProbability = World.MapGenerator.treeMap.GetTreeProbability(WorldPosition.x + blockPosition.x, WorldPosition.z + blockPosition.z);
+						
+						if (treeProbability)
 							CreateTree(i, j + 1, k);
 
 						break;

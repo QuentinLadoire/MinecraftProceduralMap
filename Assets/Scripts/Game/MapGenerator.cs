@@ -4,32 +4,11 @@ using UnityEngine;
 
 public class MapGenerator : MonoBehaviour
 {
-	public HeightMap GroundHeightMap { get => heightMap; }
-	public int		 GroundHeightMax { get => groundHeightMax; }
+	public GroundMap groundMap = new GroundMap();
 
-	public HeightMap TreeHeightMap	 { get => treeHeightMap; }
-	public float	 TreeProbability { get => treeProbability; }
+	public TreeMap treeMap = new TreeMap();
 
-	// Ground HeightMap Parameters
-	[SerializeField] int seed = 0;
-	[SerializeField] int octaves = 4;
-	[SerializeField] float lacunarity = 2.0f;
-	[SerializeField] [Range(0.0f, 1.0f)] float persistance = 0.5f;
-	[SerializeField] Vector2 scale = new Vector2(20, 40);
-
-	[SerializeField] int groundHeightMax = 15; 
-
-	// Tree HeightMap Parameters
-	[SerializeField] int seedTree = 0;
-	[SerializeField] int octavesTree = 4;
-	[SerializeField] float lacunarityTree = 2.0f;
-	[SerializeField] [Range(0.0f, 1.0f)] float persistanceTree = 0.5f;
-	[SerializeField] Vector2 scaleTree = new Vector2(20, 40);
-
-	[SerializeField] [Range(0.0f, 1.0f)] float treeProbability = 0.0f;
-
-	HeightMap heightMap = null;
-	HeightMap treeHeightMap = null;
+	public CaveMap caveMap = new CaveMap();
 
 	public ChunkData GenerateChunkData(Vector2Int chunkKey)
 	{
@@ -44,14 +23,7 @@ public class MapGenerator : MonoBehaviour
 	}
 	public BlockType GenerateBlockType(Vector3 worldPosition)
 	{
-		var height = heightMap.GetHeight(worldPosition.x, worldPosition.z);
-		var groundHeight = height * groundHeightMax;
+		var groundHeight = groundMap.GetHeight(worldPosition.x, worldPosition.z);
 		return (worldPosition.y > groundHeight) ? BlockType.Air : BlockType.Grass;
-	}
-
-	private void Awake()
-	{
-		heightMap = new HeightMap(seed, octaves, lacunarity, persistance, scale);
-		treeHeightMap = new HeightMap(seedTree, octavesTree, lacunarityTree, persistanceTree, scaleTree);
 	}
 }
