@@ -7,6 +7,7 @@ public class World : MonoBehaviour
 	static World instance = null;
 
 	public static int ChunkView { get => instance.chunkView; }
+	public static int ChunkCount { get => instance.chunkList.Count; }
 	public static TextureData TextureData { get => instance.textureData; }
 	public static MapGenerator MapGenerator { get => instance.mapGenerator; }
 

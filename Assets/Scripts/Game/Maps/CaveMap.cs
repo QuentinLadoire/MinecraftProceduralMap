@@ -16,6 +16,10 @@ public class CaveMap
     public int heighMax = 10;
     public float probability = 0.5f;
 
+    public bool GetProbability(float x, float y, float z)
+	{
+        return Noise.CoherentNoise3D(x, y, z, octaves, persistance, lacunarity, scale.x, scale.y, scale.z, seed) > probability;
+	}
     public float GetHeight(float x, float y, float z)
 	{
         return Noise.CoherentNoise3D(x, y, z, octaves, persistance, lacunarity, scale.x, scale.y, scale.z, seed) * heighMax;

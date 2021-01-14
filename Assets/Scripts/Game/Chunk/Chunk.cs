@@ -5,7 +5,7 @@ using UnityEngine;
 public class Chunk : MonoBehaviour
 {
 	public const int ChunkSize = 15;
-	public const int ChunkHeight = 50;
+	public const int ChunkHeight = 100;
 	public static int ChunkRadius = Mathf.FloorToInt(ChunkSize / 2.0f);
 
 	public ChunkData ChunkData { get; set; } = null;
@@ -13,7 +13,9 @@ public class Chunk : MonoBehaviour
 	public Block GetBlockAt(Vector3 worldPosition)
 	{
 		var blockPosition = worldPosition - ChunkData.WorldPosition;
-
+		blockPosition.x += ChunkRadius;
+		blockPosition.z += ChunkRadius;
+		
 		return ChunkData.GetBlock((int)blockPosition.x, (int)blockPosition.y, (int)blockPosition.z);
 	}
 	public void SetBlockAt(Vector3 worldPosition, BlockType type)
@@ -26,18 +28,35 @@ public class Chunk : MonoBehaviour
 	}
 
  	MeshFilter meshFilter = null;
-	
+
+	public static double groundGenerationDelay = 0.0d;
+	public static double treeGenerationDelay = 0.0d;
+	public static double caveGenerationDelay = 0.0d;
+	public static double meshGenerationDelay = 0.0d;
+
 	IEnumerator ChunkDataGeneration()
 	{
+		var start = System.DateTime.Now;
 		ChunkData.GenerateGround();
+		groundGenerationDelay += System.DateTime.Now.Subtract(start).TotalSeconds;
 
 		yield return new WaitForFixedUpdate();
 
-		ChunkData.GenerateTree();
+		start = System.DateTime.Now;
+		//ChunkData.GenerateCaves();
+		caveGenerationDelay = System.DateTime.Now.Subtract(start).TotalSeconds;
 
 		yield return new WaitForFixedUpdate();
 
+		start = System.DateTime.Now;
+		ChunkData.GenerateTrees();
+		treeGenerationDelay += System.DateTime.Now.Subtract(start).TotalSeconds;
+
+		yield return new WaitForFixedUpdate();
+
+		start = System.DateTime.Now;
 		ChunkData.CalculateMeshData();
+		meshGenerationDelay += System.DateTime.Now.Subtract(start).TotalSeconds;
 
 		yield return new WaitForFixedUpdate();
 

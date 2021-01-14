@@ -7,28 +7,20 @@ public class DebugGeneration : MonoBehaviour
 {
     [SerializeField] Text debugText = null;
 
-    [SerializeField] ThreadGeneration threadGeneration = null;
-
-	void UpdateText()
+	void Update()
 	{
-		debugText.text = "Thread Generation\n" +
-			"	Chunk Loaded Count : " + threadGeneration.LoadedChunkCount + "\n" +
-			"	Chunk Instantiated Count : " + threadGeneration.InstantiatedChunkCount + "\n" +
-			"\n" +
-			"State : " + threadGeneration.ThreadState + "s\n" +
-			"	Global Time : " + threadGeneration.GlobalGenerationTime + "s\n" +
-			"	ChunkData Time : " + threadGeneration.ChunkDataGenerationTime + "s\n" +
-			"	MeshData Time : " + threadGeneration.MeshDataGenerationTime + "s\n";
-	}
-
-	private void Update()
-	{
-		if (threadGeneration == null) return;
-
-		if (threadGeneration.updateDebugInfo)
-		{
-			UpdateText();
-			threadGeneration.updateDebugInfo = false;
-		}
+		debugText.text = "World Creation\n" +
+						 "	- Chunk nb : " + World.ChunkCount + "\n" +
+						 "	- Ground : " + Chunk.groundGenerationDelay + "s\n" +
+						 "	- Trees : " + Chunk.treeGenerationDelay + "s\n" +
+						 "	- Caves : " + Chunk.caveGenerationDelay + "s\n" +
+						 "	- Mesh : " + Chunk.meshGenerationDelay + "s\n" +
+						 "		- Face Up : " + ChunkData.meshUpDelay + "s\n" +
+						 "		- Face Down : " + ChunkData.meshDownDelay + "s\n" +
+						 "		- Face Left : " + ChunkData.meshLeftDelay + "s\n" +
+						 "		- Face Right : " + ChunkData.meshRightDelay + "s\n" +
+						 "		- Face Back : " + ChunkData.meshBackDelay + "s\n" +
+						 "		- Face Front : " + ChunkData.meshFrontDelay + "s\n" +
+						 "		- Face All : " + ChunkData.meshAllDelay + "s\n";
 	}
 }

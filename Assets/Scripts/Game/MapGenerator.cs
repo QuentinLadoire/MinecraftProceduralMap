@@ -10,6 +10,7 @@ public class MapGenerator : MonoBehaviour
 
 	public CaveMap caveMap = new CaveMap();
 
+	//Deprecated : Use by threadGeneration
 	public ChunkData GenerateChunkData(Vector2Int chunkKey)
 	{
 		ChunkData chunkData = new ChunkData();
@@ -17,10 +18,11 @@ public class MapGenerator : MonoBehaviour
 
 		chunkData.GenerateGround();
 
-		chunkData.GenerateTree();
+		chunkData.GenerateTrees();
 
 		return chunkData;
 	}
+
 	public BlockType GenerateBlockType(Vector3 worldPosition)
 	{
 		var groundHeight = groundMap.GetHeight(worldPosition.x, worldPosition.z);

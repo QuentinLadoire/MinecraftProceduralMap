@@ -4,14 +4,20 @@ using UnityEngine;
 
 public class ChunkData
 {
+	public static double meshUpDelay = 0.0d;
+	public static double meshDownDelay = 0.0d;
+	public static double meshLeftDelay = 0.0d;
+	public static double meshRightDelay = 0.0d;
+	public static double meshBackDelay = 0.0d;
+	public static double meshFrontDelay = 0.0d;
+	public static double meshAllDelay = 0.0d;
+
 	public Chunk ChunkParent { get; set; } = null;
 
 	public Vector3 WorldPosition { get; set; } = Vector3.zero;
 
 	Block[,,] blocks = null;
 	MeshData meshData = null;
-
-	bool isModified = false;
 
 	public ChunkData()
 	{
@@ -25,7 +31,7 @@ public class ChunkData
 				}
 	}
 
-	public void SetBlock(int i, int j, int k, BlockType blockType)
+	public void SetBlock(int i, int j, int k, BlockType blockType, bool usePrirority = true)
 	{
 		if (j < 0 || j >= Chunk.ChunkHeight) return;
 
@@ -36,10 +42,13 @@ public class ChunkData
 			return;
 		}
 
-		if (blocks[i, j, k].Type == BlockType.Air || blocks[i, j, k].IsTransparent)
+		if (usePrirority)
+		{
+			if (blocks[i, j, k].Type == BlockType.Air || blocks[i, j, k].IsTransparent)
+				blocks[i, j, k].Type = blockType;
+		}
+		else
 			blocks[i, j, k].Type = blockType;
-
-		isModified = true;
 	}
 	public Block GetBlock(int i, int j, int k)
 	{
@@ -128,45 +137,47 @@ public class ChunkData
 	public void GenerateGround()
 	{
 		for (int i = 0; i < Chunk.ChunkSize; i++)
-			for (int j = 0; j < Chunk.ChunkHeight; j++)
+			for (int k = 0; k < Chunk.ChunkSize; k++)
 			{
-				for (int k = 0; k < Chunk.ChunkSize; k++)
-				{
-					var blockPosition = new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius);
-					var groundHeight = World.MapGenerator.groundMap.GetHeight(WorldPosition.x + blockPosition.x, WorldPosition.z + blockPosition.z);
-					if (blockPosition.y < groundHeight)
-						SetBlock(i, j, k, BlockType.Grass); // if block is below ground Height, create a block.
-				}
+				var groundHeight = World.MapGenerator.groundMap.GetHeight(WorldPosition.x + i - Chunk.ChunkRadius, WorldPosition.z + k - Chunk.ChunkRadius);
+				for (int j = 0; j < Chunk.ChunkHeight; j++)
+					if (j < groundHeight)
+						SetBlock(i, j, k, BlockType.Grass); // if block is below ground Height, create a grass block.
 			}
 	}
-	public void GenerateTree()
+	public void GenerateTrees()
 	{
 		for (int i = 0; i < Chunk.ChunkSize; i++)
 			for (int k = 0; k < Chunk.ChunkSize; k++)
-				for (int j = Chunk.ChunkHeight - 1; j >= 0; j--)
+			{
+				var treeProbability = World.MapGenerator.treeMap.GetTreeProbability(WorldPosition.x + i - Chunk.ChunkRadius, WorldPosition.z + k - Chunk.ChunkRadius);
+				if (treeProbability)
+					for (int j = 0; j < Chunk.ChunkHeight; j++)
+						if (blocks[i, j, k].Type == BlockType.Air)
+						{
+							CreateTree(i, j, k);
+							break;
+						}
+			}
+	}
+	public void GenerateCaves()
+	{
+		for (int i = 0; i < Chunk.ChunkSize; i++)
+			for (int j = 0; j < World.MapGenerator.caveMap.heighMax; j++)
+				for (int k = 0; k < Chunk.ChunkSize; k++)
 				{
-					//Check block type if is the first Ground Layer
-					if (blocks[i, j, k].Type == BlockType.Grass)
-					{
-						var blockPosition = new Vector3(i - Chunk.ChunkRadius, j, k - Chunk.ChunkRadius);
-						var treeProbability = World.MapGenerator.treeMap.GetTreeProbability(WorldPosition.x + blockPosition.x, WorldPosition.z + blockPosition.z);
-						
-						if (treeProbability)
-							CreateTree(i, j + 1, k);
-
-						break;
-					}
+					var caveProba = World.MapGenerator.caveMap.GetProbability(WorldPosition.x + i - Chunk.ChunkRadius, j, WorldPosition.z + k - Chunk.ChunkRadius);
+					if (caveProba)
+						SetBlock(i, j, k, BlockType.Air, false);
 				}
 	}
 
 	public void CalculateMeshData()
 	{
-		if (!isModified) return;
-
 		meshData = new MeshData();
 
-		for (int k = 0; k < Chunk.ChunkSize; k++)
-			for (int i = 0; i < Chunk.ChunkSize; i++)
+		for (int i = 0; i < Chunk.ChunkSize; i++)
+			for (int k = 0; k < Chunk.ChunkSize; k++)
 				for (int j = Chunk.ChunkHeight - 1; j >= 0; j--)
 				{
 					if (blocks[i, j, k].Type != BlockType.Air)
@@ -174,24 +185,50 @@ public class ChunkData
 						if (!blocks[i, j, k].IsTransparent)
 						{
 							if (CheckUp(i, j, k))
+							{
+								var start = System.DateTime.Now;
 								meshData += blocks[i, j, k].CreateMeshUp();
+								meshUpDelay += System.DateTime.Now.Subtract(start).TotalSeconds;
+							}
 							if (CheckDown(i, j, k))
+							{
+								var start = System.DateTime.Now;
 								meshData += blocks[i, j, k].CreateMeshDown();
+								meshDownDelay += System.DateTime.Now.Subtract(start).TotalSeconds;
+							}
 							if (CheckRight(i, j, k))
+							{
+								var start = System.DateTime.Now;
 								meshData += blocks[i, j, k].CreateMeshRight();
+								meshRightDelay += System.DateTime.Now.Subtract(start).TotalSeconds;
+							}
 							if (CheckLeft(i, j, k))
+							{
+								var start = System.DateTime.Now;
 								meshData += blocks[i, j, k].CreateMeshLeft();
+								meshLeftDelay += System.DateTime.Now.Subtract(start).TotalSeconds;
+							}
 							if (CheckFront(i, j, k))
+							{
+								var start = System.DateTime.Now;
 								meshData += blocks[i, j, k].CreateMeshFront();
+								meshFrontDelay += System.DateTime.Now.Subtract(start).TotalSeconds;
+							}
 							if (CheckBack(i, j, k))
+							{
+								var start = System.DateTime.Now;
 								meshData += blocks[i, j, k].CreateMeshBack();
+								meshBackDelay += System.DateTime.Now.Subtract(start).TotalSeconds;
+							}
 						}
 						else
+						{
+							var start = System.DateTime.Now;
 							meshData += blocks[i, j, k].CreateMeshAll();
+							meshAllDelay += System.DateTime.Now.Subtract(start).TotalSeconds;
+						}
 					}
 				}
-
-		isModified = false;
 	}
 	public Mesh CreateMesh()
 	{

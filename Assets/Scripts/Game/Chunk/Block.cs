@@ -27,7 +27,7 @@ public enum BlockFace
 
 public struct Block
 {
-	public static Block Default = new Block(Vector3.zero, BlockType.None, false);
+	public static Block Default = new Block(Vector3.zero, BlockType.None);
 
 	public Vector3 Position { get; set; }
 	public BlockType Type { get => type; set => SetType(value); }
@@ -184,10 +184,12 @@ public struct Block
 		return CreateMeshUp() + CreateMeshDown() + CreateMeshRight() + CreateMeshLeft() + CreateMeshFront() + CreateMeshBack();
 	}
 	
-	public Block(Vector3 position, BlockType type, bool isSolid)
+	public Block(Vector3 position, BlockType type)
 	{
 		Position = position;
 		this.type = type;
-		IsTransparent = isSolid;
+		IsTransparent = false;
+
+		SetType(type);
 	}
 }

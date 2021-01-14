@@ -321,7 +321,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   debugText: {fileID: 2086314308}
-  threadGeneration: {fileID: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -866,12 +865,44 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
+      propertyPath: caveMap.octaves
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
+      propertyPath: caveMap.scale.x
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
+      propertyPath: caveMap.scale.y
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
+      propertyPath: caveMap.scale.z
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
       propertyPath: persistanceTree
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
       propertyPath: treeProbability
       value: 0.85
+      objectReference: {fileID: 0}
+    - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
+      propertyPath: caveMap.heighMax
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
+      propertyPath: caveMap.lacunarity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
+      propertyPath: caveMap.persistance
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 573669782037790337, guid: 6898b2f61f4324042825b03515da17db, type: 3}
+      propertyPath: groundMap.heightMax
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 573669782037790339, guid: 6898b2f61f4324042825b03515da17db, type: 3}
       propertyPath: m_Name
