@@ -180,7 +180,9 @@ public class MapGeneratorEditor : Editor
 			var colors = new Color[20 * 20];
 			for (int x = 0; x < 20; x++)
 				for (int y = 0; y < 20; y++)
-					colors[y + x * 20] = Color.Lerp(Color.black, Color.white, caveMap.GetHeight(faces[i].transform.position.x, faces[i].transform.position.y, faces[i].transform.position.z));
+					colors[y + x * 20] = Color.Lerp(Color.blue, Color.white, caveMap.GetHeightUnscale((faces[i].transform.position.x != 0.0f) ? faces[i].transform.position.x : x,
+																									   (faces[i].transform.position.y != 0.0f) ? faces[i].transform.position.y : y,
+																									   (faces[i].transform.position.z != 0.0f) ? faces[i].transform.position.z : (faces[i].transform.position.x != 0.0f) ? x : y));
 
 			Texture2D texture = new Texture2D(20, 20);
 			texture.filterMode = FilterMode.Point;
@@ -221,6 +223,7 @@ public class MapGeneratorEditor : Editor
 
 		renderUtils = new PreviewRenderUtility();
 		noise3DPreview = CreateNoise3DPreview();
+		UpdateNoise3DPreview();
 		renderUtils.AddSingleGO(noise3DPreview);
 
 		renderUtils.camera.transform.position = new Vector3(0, 0, -10);
