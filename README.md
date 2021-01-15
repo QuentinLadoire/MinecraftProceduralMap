@@ -2,7 +2,8 @@
 
 A simply minecraft world.\
 I have implement a Perlin Noise 2D and 3D, a Coherent 2D and 3D.\
-I used the 2D Noise for generate a ground level, and a other 2D Noise for generate a trees on the ground.\ \
+I used the 2D Noise for generate a ground level, and a other 2D Noise for generate a trees on the ground.\
+\
 Actually i try to implemente with a 3D Noise a Cave generation.
 
 ## This is a link for a video presentation :
