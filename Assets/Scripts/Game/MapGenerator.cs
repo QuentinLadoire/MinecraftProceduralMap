@@ -10,7 +10,6 @@ public class MapGenerator : MonoBehaviour
 
 	public CaveMap caveMap = new CaveMap();
 
-	//Deprecated : Use by threadGeneration
 	public ChunkData GenerateChunkData(Vector2Int chunkKey)
 	{
 		ChunkData chunkData = new ChunkData();
